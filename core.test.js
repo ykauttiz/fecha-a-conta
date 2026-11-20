@@ -11,3 +11,8 @@ test("CSV com aspas e campos inválidos",()=>{
   assert.equal(run('"a;b";1','"a;b";1')[0].id,"a;b");
   for (const input of ["a;1,111",'a;"2',";1"]) assert.throws(()=>run(input,""));
 });
+test("resumo separa créditos e faltas sem somar duplicatas",()=>{
+  const {summary} = require("./core");
+  assert.equal(summary(run("a;5\nb;5\nc;2\nd;9","a;4\nb;6\nc;2\nd;2\nd;2")),
+    "1 conferido(s) · 3 para revisar. Pares únicos: R$ 1,00 a menos e R$ 1,00 a mais.");
+});

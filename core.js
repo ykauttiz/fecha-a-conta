@@ -49,4 +49,16 @@ function reconcile(orders, payments) {
     return {id, status, expected:a, received:b, difference};
   });
 }
-if (typeof module !== "undefined") module.exports = {reconcile};
+function summary(rows) {
+  let matched = 0, short = 0n, extra = 0n;
+  for (const {difference} of rows) {
+    if (difference === null) continue;
+    if (difference === 0) matched++;
+    else if (difference < 0) short -= BigInt(difference);
+    else extra += BigInt(difference);
+  }
+  const reais = cents => "R$ " + (cents / 100n).toLocaleString("pt-BR") + "," + String(cents % 100n).padStart(2,"0");
+  return matched + " conferido(s) · " + (rows.length - matched) + " para revisar. Pares únicos: " +
+    reais(short) + " a menos e " + reais(extra) + " a mais.";
+}
+if (typeof module !== "undefined") module.exports = {reconcile, summary};

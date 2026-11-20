@@ -9,3 +9,7 @@ Para usar seus dados, baixe a pasta e escolha dois CSVs UTF-8 separados por pont
 O código converte os valores em centavos inteiros e compara IDs como texto para preservar zeros à esquerda. Mais de uma linha com o mesmo ID exige revisão, inclusive em parcelamentos ou ajustes legítimos. Repasses agrupados precisam ser detalhados por pedido antes da importação.
 
 Execute `node --test` com Node 20+ para conferir estornos, ausência de pares, duplicatas, leitura de CSV e centavos.
+
+## Fechamento por divergência
+
+Depois de carregar os CSVs, marque **Mostrar somente pedidos para revisar**. O resumo mantém o total da conferência e separa quanto foi recebido a menos e a mais nos pares únicos. Pedidos ausentes e duplicatas entram na fila de revisão, sem entrar nos totais monetários.
