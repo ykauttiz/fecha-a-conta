@@ -16,3 +16,10 @@ test("resumo separa créditos e faltas sem somar duplicatas",()=>{
   assert.equal(summary(run("a;5\nb;5\nc;2\nd;9","a;4\nb;6\nc;2\nd;2\nd;2")),
     "1 conferido(s) · 3 para revisar. Pares únicos: R$ 1,00 a menos e R$ 1,00 a mais.");
 });
+test("paginação preserva IDs com zero e recalcula limites após o filtro",()=>{
+  const {pageOf} = require("./core");
+  const rows = Array.from({length:101},(_,i)=>({id:String(i).padStart(4,"0"),status:i===10?"Divergente":"Conferido"}));
+  assert.equal(pageOf(rows,"",false,2).rows[0].id,"0050");
+  assert.deepEqual(pageOf(rows,"001",true,3).rows,[rows[10]]);
+  assert.equal(pageOf(rows,"xyz",false,3).current,1);
+});

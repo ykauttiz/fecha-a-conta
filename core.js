@@ -61,4 +61,13 @@ function summary(rows) {
   return matched + " conferido(s) · " + (rows.length - matched) + " para revisar. Pares únicos: " +
     reais(short) + " a menos e " + reais(extra) + " a mais.";
 }
-if (typeof module !== "undefined") module.exports = {reconcile, summary};
+function pageOf(rows, query, pending, page) {
+  const search = query.trim().toLocaleLowerCase("pt-BR");
+  const filtered = rows.filter(row => (!pending || row.status !== "Conferido") &&
+    row.id.toLocaleLowerCase("pt-BR").includes(search));
+  const pages = Math.max(1, Math.ceil(filtered.length / 50));
+  const current = Math.max(1, Math.min(page, pages));
+  const offset = (current - 1) * 50;
+  return {rows: filtered.slice(offset, offset + 50), count: filtered.length, pages, current};
+}
+if (typeof module !== "undefined") module.exports = {reconcile, summary, pageOf};
