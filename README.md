@@ -1,5 +1,7 @@
 # Fecha a Conta
 
+[Experimentar no navegador](https://ykauttiz.github.io/fecha-a-conta/)
+
 O pedido 102 deveria render R$ 24,00. O extrato mostra R$ 23,80. Abra **index.html**, clique em **Abrir exemplo** e encontre a diferença de vinte centavos.
 
 Para usar seus dados, baixe a pasta e escolha dois CSVs UTF-8 separados por ponto e vírgula. O primeiro tem as colunas `pedido;previsto`, o segundo `pedido;recebido`. Informe uma linha por pedido em cada arquivo, com o líquido esperado já calculado. Há exemplos em pedidos.csv e repasses.csv. Os arquivos ficam no navegador.
