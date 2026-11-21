@@ -12,6 +12,10 @@ As exportações destinadas a planilhas tratam prefixos de fórmula ASCII, carac
 
 ![Conferência dos pedidos e repasses da loja fictícia.](assets/demonstracao.webp)
 
+## Aparência e navegação
+
+No cabeçalho, escolha **Sistema**, **Claro** ou **Escuro**. Sistema acompanha o aparelho. O navegador guarda a escolha localmente para a próxima visita. Use Tab para chegar ao atalho de conteúdo e aos controles. As transições respeitam a preferência de movimento reduzido.
+
 ## Primeiro fechamento
 
 1. Abra **Exemplo fictício**. O pedido 0017 vendeu R$ 85,00, com R$ 10,20 de comissão e R$ 5,00 de cupom da loja. Restaram R$ 69,80. Outro pedido acrescentou R$ 30,00 ao lote L01. Dois depósitos de R$ 60,00 e R$ 39,80 fecharam o lote.
