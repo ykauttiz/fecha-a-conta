@@ -191,6 +191,24 @@ function mapping(s) {
     const label=element("label",labels[f]),select=element("select");select.append(new Option("Ignorar","-1"),...headers.map((h,i)=>new Option(h,String(i))));
     select.value=String(s.map[f]);select.onchange=()=>{s.map[f]=Number(select.value);preview();};label.append(select);grid.append(label);
   }
+  const key = "fecha-a-conta.mapa.v1:" + JSON.stringify([s.side,s.platform,headers]);
+  const saveMap = element("button","Guardar mapeamento neste navegador");
+  const useMap = element("button","Aplicar mapeamento guardado");
+  saveMap.type = useMap.type = "button";
+  try {useMap.disabled = !localStorage.getItem(key);} catch {useMap.disabled = true;}
+  saveMap.onclick = () => {
+    try {localStorage.setItem(key,JSON.stringify(s.map));useMap.disabled = false;say("Mapeamento guardado para este cabeçalho.");}
+    catch {say("Não foi possível guardar o mapeamento neste navegador.");}
+  };
+  useMap.onclick = () => {
+    try {
+      const map = JSON.parse(localStorage.getItem(key));
+      if (!Book.fields.every(f => Number.isInteger(map?.[f]) && map[f] >= -1 && map[f] < headers.length)) throw Error();
+      for (const [index,select] of [...grid.querySelectorAll("select")].entries()) select.value = String(map[Book.fields[index]]);
+      s.map = map;preview();say("Mapeamento aplicado. Confira a prévia antes de incluir.");
+    } catch {say("O mapeamento guardado está indisponível.");}
+  };
+  article.append(saveMap,useMap);
   preview();return article;
 }
 $("import").onsubmit=async event=>{

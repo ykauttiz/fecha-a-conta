@@ -27,6 +27,11 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         page.locator("#demo").click()
         expect(page.locator("#metrics")).to_contain_text("R$ 1,50")
+        if os.environ.get("CAPTURAR_DEMO") == "1":
+            captures = root / "capturas"
+            captures.mkdir(exist_ok=True)
+            page.screenshot(path=captures / f"demo-{width}.png", animations="disabled")
+
         expect(page.locator("#segments")).to_contain_text("Delivery")
         page.locator("#segment-by").select_option("shop")
         expect(page.locator("#segments")).to_contain_text("Loja exemplo")
@@ -57,6 +62,10 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         page.locator("#orders").set_input_files(root / "exemplos/pedidos-lote.csv")
         page.locator("#payments").set_input_files(root / "exemplos/repasses-lote.csv")
         page.get_by_text("Preparar prévia", exact=True).click()
+        panel = page.locator("#maps article").first
+        panel.get_by_text("Guardar mapeamento neste navegador",exact=True).click()
+        panel.get_by_text("Aplicar mapeamento guardado",exact=True).click()
+        expect(page.locator("#message")).to_contain_text("Mapeamento aplicado")
         page.locator("#confirm").click()
         expect(page.locator("#origin")).to_have_text("2 arquivo(s) nesta sessão")
         page.get_by_text("Preparar prévia", exact=True).click()
