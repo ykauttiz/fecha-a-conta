@@ -76,7 +76,7 @@ function filter() {
     try {minimum=Book.cents(raw);if(minimum<0n)throw Error();}
     catch {return [];}
   }
-  return groups.filter(g=>{
+  const matches = groups.filter(g=>{
     if(type && !g.entries.some(e=>e.type===type))return false;
     if(direction==="short" && !(g.difference!==null && g.difference<0n))return false;
     if(direction==="extra" && !(g.difference!==null && g.difference>0n))return false;
@@ -87,6 +87,19 @@ function filter() {
     const start=$("from").value,end=$("to").value;
     return !(start||end) || g.entries.some(e=>e.date && (!start||e.date>=start) && (!end||e.date<=end));
   });
+  const order = $("order-results").value;
+  if (order) {
+    const amount = g => order === "received" ? g.received :
+      g.difference === null ? null : (g.difference < 0n ? -g.difference : g.difference);
+    matches.sort((a,b) => {
+      const left = amount(a), right = amount(b);
+      if (left === right) return 0;
+      if (left === null) return 1;
+      if (right === null) return -1;
+      return left > right ? -1 : 1;
+    });
+  }
+  return matches;
 }
 function cells(row,values,tag="td"){for(const v of values)row.append(element(tag,v));}
 function render() {
@@ -95,6 +108,7 @@ function render() {
     const box=element("div",label);box.className="metric";box.append(element("strong",Book.money(n)));return box;
   }));
   $("count").textContent=list.length+" grupo(s) na seleção · "+t.unpaired+" sem comparação conclusiva. Datas selecionam o grupo completo.";
+  if (!list.length) $("count").textContent = "Nenhum pedido ou lote corresponde à seleção. Ajuste ou limpe os filtros.";
   if (!$("minimum").validity.valid) $("count").textContent="Informe um valor positivo em reais ou zero, com até duas casas decimais.";
   if ($("from").value && $("to").value && $("from").value > $("to").value) $("count").textContent="A data inicial precisa ser anterior ou igual à final.";
   const pages=Math.max(1,Math.ceil(list.length/50));page=Math.max(1,Math.min(page,pages));
@@ -165,7 +179,14 @@ $("cancel").onclick=()=>{stop();say("Prévia cancelada.");};
 $("demo").onclick=()=>{if(sources.length&&!demo&&!confirm("Substituir o fechamento atual pelo exemplo fictício?"))return;
   stop();commit(demoSources,Book.reconcile(demoSources),[],true);say("Exemplo fictício carregado.");$("workspace").scrollIntoView();};
 $("clear").onclick=()=>{if(!confirm("Limpar os dados desta página? Baixe um backup se quiser retomá-los."))return;stop();commit([],[],[],false);$("import").reset();say("Fechamento limpo.");};
-for (const id of ["query","status","shop","channel","from","to","minimum","direction","entry-type"]) $(id).oninput=()=>{page=1;render();};
+const filterFields = ["query","status","shop","channel","from","to","minimum","direction","entry-type","order-results"];
+$("reset-filters").onclick = () => {
+  for (const id of filterFields) $(id).value = "";
+  page = 1;
+  render();
+  $("query").focus();
+};
+for (const id of filterFields) $(id).oninput=()=>{page=1;render();};
 $("prev").onclick=()=>{page--;render();};$("next").onclick=()=>{page++;render();};
 function download(name,text,type){const url=URL.createObjectURL(new Blob([text],{type})),a=element("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $("save").onclick=()=>download("fecha-a-conta.json",JSON.stringify({version:1,sources,notes,demo}),"application/json");
