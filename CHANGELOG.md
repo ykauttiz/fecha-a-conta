@@ -2,6 +2,8 @@
 
 ## 2026-11-21
 
+Exportações CSV neutralizam também prefixos de controle e variantes Unicode de caracteres que podem iniciar fórmulas em planilhas.
+
 Os testes de interface também exercitam telas de 320 pixels.
 
 Indicadores e impressão mostram um travessão quando falta um grupo comparável. A impressão identifica a loja e a plataforma de cada grupo.

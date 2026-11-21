@@ -2,6 +2,8 @@
 
 **Conferência local de pedidos, taxas e repasses de delivery em reais.** Abra a demonstração ou importe CSVs de uma loja. Cada resultado leva aos arquivos e linhas usados no cálculo.
 
+As exportações destinadas a planilhas tratam prefixos de fórmula ASCII, caracteres de controle e variantes Unicode conhecidas. A proteção é aplicada célula por célula antes de gerar o CSV.
+
 [Abrir a conferência](https://ykauttiz.github.io/fecha-a-conta/) · [Histórico](CHANGELOG.md) · [Testes](https://github.com/ykauttiz/fecha-a-conta/actions/workflows/conferencia.yml)
 
 ![Conferência dos pedidos e repasses da loja fictícia.](assets/demonstracao.webp)

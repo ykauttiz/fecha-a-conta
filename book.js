@@ -148,7 +148,8 @@ const Book = (() => {
   }
   function cell(v) {
     let s=String(v ?? "");
-    if (/^\s*[=+@-]/.test(s) && !/^-?\d+(,\d+)?$/.test(s)) s="'"+s;
+    const formula = /^[\t\r\n\0]|^\s*[=+@\uFF1D\uFF0B\uFF0D\uFF20-]/u.test(s);
+    if (formula && !/^-?\d+(,\d+)?$/.test(s)) s="'"+s;
     return '"'+s.replaceAll('"','""')+'"';
   }
   return {csv,suggest,fields,parseSource,reconcile,totals,cents,decimal,money,cell,validDate};

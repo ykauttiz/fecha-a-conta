@@ -49,6 +49,8 @@ test("mapeamento, data inválida e precisão excessiva",()=>{
 });
 test("CSV de evidência preserva aspas e neutraliza fórmulas",()=>{
   a.equal(B.cell('=1+1'),'"\'=1+1"');a.equal(B.cell('-0,01'),'"-0,01"');
+  a.equal(B.cell('\tSOMA(A1:A2)'),'"\'\tSOMA(A1:A2)"');
+  a.equal(B.cell('＝1+1'),'"\'＝1+1"');
   a.equal(B.cell('a"b'),'"a""b"');
 });
 test("10 mil pedidos e pagamentos não perdem centavos",()=>{
