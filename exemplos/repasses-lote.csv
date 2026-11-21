@@ -1,0 +1,5 @@
+pedido;lote;evento;tipo;valor;data
+;L01;p1;repasse;60,00;2026-11-02
+;L01;p2;repasse;39,80;2026-11-03
+0019;;p3;repasse;38,50;2026-11-03
+0021;;p4;repasse;12,00;2026-11-03
