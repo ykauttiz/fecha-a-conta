@@ -20,6 +20,11 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))
         page.goto(f"http://127.0.0.1:{server.server_port}/")
+        page.keyboard.press("Tab")
+        expect(page.locator(".skip")).to_be_focused()
+        page.keyboard.press("Enter")
+        assert page.evaluate("location.hash === document.querySelector('.skip').hash")
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         page.locator("#demo").click()
         expect(page.locator("#metrics")).to_contain_text("R$ 1,50")
         page.locator("#direction").select_option("short")
