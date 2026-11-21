@@ -2,6 +2,8 @@
 
 ## 2026-11-21
 
+Filtre por tipo de lançamento, sentido da diferença e valor mínimo em reais. O filtro por tipo seleciona o grupo completo: ao procurar comissão, você continua vendo os depósitos e o previsto daquele lote. Os limites em centavos são inclusivos e valem também para os totais, a impressão e o CSV.
+
 Um ID de evento repetido dentro do mesmo extrato mantém as linhas na memória de cálculo e leva o grupo para revisão.
 
 ## 2026-11-20 · Conciliação por lançamentos e lotes

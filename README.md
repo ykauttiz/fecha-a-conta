@@ -49,3 +49,5 @@ Abra index.html para uso offline ou rode `python -m http.server 8000` para servi
 - `book.js` lê CSV, valida lançamentos, agrupa por origem e calcula as diferenças. `worker.js` executa esse motor fora da interface.
 - `app.js` gerencia importações, seleção, histórico e exportação. `core.js` mantém a API JavaScript anterior para consumidores do comparador simples.
 - `node --test` executa os testes do motor, incluindo 10 mil pedidos. A integração contínua testa o navegador em 375 e 1280 px, além do fluxo de backup e restauração.
+
+Filtre por tipo de lançamento, sentido da diferença e valor mínimo em reais. O filtro por tipo seleciona o grupo completo: ao procurar comissão, você continua vendo os depósitos e o previsto daquele lote. Os limites em centavos são inclusivos e valem também para os totais, a impressão e o CSV.

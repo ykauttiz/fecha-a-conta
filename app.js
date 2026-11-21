@@ -69,7 +69,18 @@ function signature(g) {
 function reviewed(g) {return notes.some(n=>n.key===g.key && n.signature===signature(g));}
 function filter() {
   const q=$("query").value.trim().toLowerCase(),status=$("status").value;
+  const direction=$("direction").value, type=$("entry-type").value;
+  let minimum=0n;
+  const raw=$("minimum").value.trim();
+  if(raw){
+    try {minimum=Book.cents(raw);if(minimum<0n)throw Error();}
+    catch {return [];}
+  }
   return groups.filter(g=>{
+    if(type && !g.entries.some(e=>e.type===type))return false;
+    if(direction==="short" && !(g.difference!==null && g.difference<0n))return false;
+    if(direction==="extra" && !(g.difference!==null && g.difference>0n))return false;
+    if(minimum>0n && (g.difference===null || (g.difference<0n?-g.difference:g.difference)<minimum))return false;
     if(status==="Revisado"?!reviewed(g):status && status!==g.status)return false;
     if($("shop").value && g.scope[0]!==$("shop").value || $("channel").value && g.scope[1]!==$("channel").value)return false;
     if(q && !g.id.toLowerCase().includes(q) && !g.entries.some(e=>e.order.toLowerCase().includes(q)))return false;
@@ -84,6 +95,8 @@ function render() {
     const box=element("div",label);box.className="metric";box.append(element("strong",Book.money(n)));return box;
   }));
   $("count").textContent=list.length+" grupo(s) na seleção · "+t.unpaired+" sem comparação conclusiva. Datas selecionam o grupo completo.";
+  if (!$("minimum").validity.valid) $("count").textContent="Informe um valor positivo em reais ou zero, com até duas casas decimais.";
+  if ($("from").value && $("to").value && $("from").value > $("to").value) $("count").textContent="A data inicial precisa ser anterior ou igual à final.";
   const pages=Math.max(1,Math.ceil(list.length/50));page=Math.max(1,Math.min(page,pages));
   $("pages").hidden=pages<=1;$("page").textContent=page+" / "+pages;$("prev").disabled=page===1;$("next").disabled=page===pages;
   $("results").replaceChildren(...list.slice((page-1)*50,page*50).map(g=>{
@@ -152,7 +165,7 @@ $("cancel").onclick=()=>{stop();say("Prévia cancelada.");};
 $("demo").onclick=()=>{if(sources.length&&!demo&&!confirm("Substituir o fechamento atual pelo exemplo fictício?"))return;
   stop();commit(demoSources,Book.reconcile(demoSources),[],true);say("Exemplo fictício carregado.");$("workspace").scrollIntoView();};
 $("clear").onclick=()=>{if(!confirm("Limpar os dados desta página? Baixe um backup se quiser retomá-los."))return;stop();commit([],[],[],false);$("import").reset();say("Fechamento limpo.");};
-for (const id of ["query","status","shop","channel","from","to"]) $(id).oninput=()=>{page=1;render();};
+for (const id of ["query","status","shop","channel","from","to","minimum","direction","entry-type"]) $(id).oninput=()=>{page=1;render();};
 $("prev").onclick=()=>{page--;render();};$("next").onclick=()=>{page++;render();};
 function download(name,text,type){const url=URL.createObjectURL(new Blob([text],{type})),a=element("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 $("save").onclick=()=>download("fecha-a-conta.json",JSON.stringify({version:1,sources,notes,demo}),"application/json");
