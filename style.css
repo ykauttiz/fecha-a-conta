@@ -22,3 +22,9 @@ input::file-selector-button { padding:.45rem; margin-right:.5rem; background:#ff
 .scroll tr:nth-child(even) { background:#f4f6ee }
 .scroll :is(td,th):nth-child(n+3) { text-align:right; white-space:nowrap }
 @media(max-width:760px){.intake{grid-template-columns:minmax(0,1fr);gap:.2rem}.receipt{transform:none}.filters{grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr))}}
+.segment {border-top:4px solid #366e57}
+.segment label {max-width:16rem;margin:.8rem 0}
+.segment table {min-width:43rem}
+.segment tbody th {text-align:left;color:var(--ink)}
+.segment td {font-variant-numeric:tabular-nums;text-align:right}
+.segment td:nth-child(5){font-weight:750}

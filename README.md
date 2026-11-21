@@ -53,3 +53,6 @@ Abra index.html para uso offline ou rode `python -m http.server 8000` para servi
 Filtre por tipo de lançamento, sentido da diferença e valor mínimo em reais. O filtro por tipo seleciona o grupo completo: ao procurar comissão, você continua vendo os depósitos e o previsto daquele lote. Os limites em centavos são inclusivos e valem também para os totais, a impressão e o CSV.
 
 Ordene pedidos e lotes por maior diferença absoluta ou maior repasse recebido. A ordem também vale para o CSV e a impressão. Use **Limpar filtros e ordenação** para voltar à seleção completa.
+
+Em **Comparar repasses**, alterne entre plataforma e loja. O quadro acompanha os filtros e soma apenas os grupos comparáveis. Pedidos e lotes sem comparação aparecem na última coluna. Um travessão indica que nenhum valor pôde ser comparado.
+O resumo por loja ou plataforma exibe até 25 linhas por página. **Baixar comparação CSV** inclui todas as linhas do resumo filtrado.

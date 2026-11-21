@@ -27,6 +27,16 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         page.locator("#demo").click()
         expect(page.locator("#metrics")).to_contain_text("R$ 1,50")
+        expect(page.locator("#segments")).to_contain_text("Delivery")
+        page.locator("#segment-by").select_option("shop")
+        expect(page.locator("#segments")).to_contain_text("Loja exemplo")
+        with page.expect_download() as summary_file:
+            page.locator("#segment-csv").click()
+        summary_csv = Path(summary_file.value.path()).read_text(encoding="utf-8-sig")
+        assert '"Loja"' in summary_csv and "Loja exemplo" in summary_csv
+        page.locator("#status").select_option("Pendente")
+        expect(page.locator("#segments tr td").nth(1)).to_have_text("—")
+        page.locator("#status").select_option("")
         page.locator("#direction").select_option("short")
         page.locator("#minimum").fill("1,50")
         expect(page.locator("#results tr")).to_have_count(1)

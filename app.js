@@ -76,15 +76,15 @@ function filter() {
     try {minimum=Book.cents(raw);if(minimum<0n)throw Error();}
     catch {return [];}
   }
+  const shop=$("shop").value, channel=$("channel").value, start=$("from").value, end=$("to").value;
   const matches = groups.filter(g=>{
     if(type && !g.entries.some(e=>e.type===type))return false;
     if(direction==="short" && !(g.difference!==null && g.difference<0n))return false;
     if(direction==="extra" && !(g.difference!==null && g.difference>0n))return false;
     if(minimum>0n && (g.difference===null || (g.difference<0n?-g.difference:g.difference)<minimum))return false;
     if(status==="Revisado"?!reviewed(g):status && status!==g.status)return false;
-    if($("shop").value && g.scope[0]!==$("shop").value || $("channel").value && g.scope[1]!==$("channel").value)return false;
+    if(shop && g.scope[0]!==shop || channel && g.scope[1]!==channel)return false;
     if(q && !g.id.toLowerCase().includes(q) && !g.entries.some(e=>e.order.toLowerCase().includes(q)))return false;
-    const start=$("from").value,end=$("to").value;
     return !(start||end) || g.entries.some(e=>e.date && (!start||e.date>=start) && (!end||e.date<=end));
   });
   const order = $("order-results").value;
@@ -102,8 +102,51 @@ function filter() {
   return matches;
 }
 function cells(row,values,tag="td"){for(const v of values)row.append(element(tag,v));}
+let segmentPage = 0, segmentRows = [];
+function renderSegments(list) {
+  const byShop = $("segment-by").value === "shop";
+  $("segment-name").textContent = byShop ? "Loja" : "Plataforma";
+  const segments = new Map();
+  for (const group of list) {
+    const key = group.scope[byShop ? 0 : 1];
+    if (!segments.has(key)) segments.set(key,[]);
+    segments.get(key).push(group);
+  }
+  segmentRows = [];
+  for (const key of [...segments.keys()].sort((a,b)=>a.localeCompare(b,"pt-BR"))) {
+    const items = segments.get(key), totals = Book.totals(items);
+    const comparable = items.length > totals.unpaired;
+    const amount = n => comparable ? Book.money(n) : "—";
+    segmentRows.push([key || "Não informada",items.length,amount(totals.expected),amount(totals.received),amount(totals.extra-totals.short),totals.unpaired]);
+  }
+  segmentPage = 0; paintSegments();
+}
+function paintSegments() {
+  const pages = Math.max(1,Math.ceil(segmentRows.length/25));
+  const fragment = document.createDocumentFragment();
+  for (const [label,...values] of segmentRows.slice(segmentPage*25,(segmentPage+1)*25)) {
+    const row = element("tr"), heading = element("th",label);
+    heading.scope = "row"; row.append(heading); cells(row,values); fragment.append(row);
+  }
+  $("segments").replaceChildren(fragment);
+  $("segment-empty").hidden = segmentRows.length > 0;
+  $("segment-csv").disabled = !segmentRows.length;
+  $("segment-back").hidden = $("segment-next").hidden = pages <= 1;
+  $("segment-back").disabled = segmentPage === 0;
+  $("segment-next").disabled = segmentPage === pages-1;
+  $("segment-page").textContent = pages > 1 ? (segmentPage+1)+" / "+pages : "";
+}
+$("segment-back").onclick = () => {segmentPage--;paintSegments();};
+$("segment-next").onclick = () => {segmentPage++;paintSegments();};
+$("segment-csv").onclick = () => {
+  const heading = [$("segment-name").textContent,"Pedidos e lotes","Previsto comparável","Recebido comparável","Diferença líquida","Sem comparação"];
+  const lines = [heading,...segmentRows].map(row => row.map(Book.cell).join(";"));
+  download("resumo-de-repasses.csv","\uFEFF"+lines.join("\r\n"),"text/csv;charset=utf-8");
+}
+$("segment-by").onchange = () => renderSegments(filter());
 function render() {
   const list=filter(),t=Book.totals(list);
+  renderSegments(list);
   $("metrics").replaceChildren(...[["Líquido previsto",t.expected],["Repasse recebido",t.received],["Recebido a menos",t.short],["Recebido a mais",t.extra]].map(([label,n])=>{
     const box=element("div",label);box.className="metric";box.append(element("strong",Book.money(n)));return box;
   }));
