@@ -2,6 +2,8 @@
 
 ## 2026-11-21
 
+Indicadores e impressão mostram um travessão quando falta um grupo comparável. A impressão identifica a loja e a plataforma de cada grupo.
+
 A impressão do fechamento inclui totais comparáveis, diferenças a mais e a menos e quantidade de grupos pendentes, junto das linhas de evidência da seleção.
 
 Na prévia de um CSV, guarde o mapeamento das colunas e reaplique-o quando plataforma, cabeçalho e tipo de arquivo coincidirem. O modelo guarda a correspondência dos campos. O CI disponibiliza capturas em duas larguras.

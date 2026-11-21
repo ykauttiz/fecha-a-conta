@@ -101,6 +101,9 @@ function filter() {
   }
   return matches;
 }
+function comparableAmount(value, count, totals) {
+  return count > totals.unpaired ? Book.money(value) : "—";
+}
 function cells(row,values,tag="td"){for(const v of values)row.append(element(tag,v));}
 let segmentPage = 0, segmentRows = [];
 function renderSegments(list) {
@@ -115,8 +118,7 @@ function renderSegments(list) {
   segmentRows = [];
   for (const key of [...segments.keys()].sort((a,b)=>a.localeCompare(b,"pt-BR"))) {
     const items = segments.get(key), totals = Book.totals(items);
-    const comparable = items.length > totals.unpaired;
-    const amount = n => comparable ? Book.money(n) : "—";
+    const amount = n => comparableAmount(n,items.length,totals);
     segmentRows.push([key || "Não informada",items.length,amount(totals.expected),amount(totals.received),amount(totals.extra-totals.short),totals.unpaired]);
   }
   segmentPage = 0; paintSegments();
@@ -148,7 +150,7 @@ function render() {
   const list=filter(),t=Book.totals(list);
   renderSegments(list);
   $("metrics").replaceChildren(...[["Líquido previsto",t.expected],["Repasse recebido",t.received],["Recebido a menos",t.short],["Recebido a mais",t.extra]].map(([label,n])=>{
-    const box=element("div",label);box.className="metric";box.append(element("strong",Book.money(n)));return box;
+    const box=element("div",label);box.className="metric";box.append(element("strong",comparableAmount(n,list.length,t)));return box;
   }));
   $("count").textContent=list.length+" grupo(s) na seleção · "+t.unpaired+" sem comparação conclusiva. Datas selecionam o grupo completo.";
   if (!list.length) $("count").textContent = "Nenhum pedido ou lote corresponde à seleção. Ajuste ou limpe os filtros.";
@@ -280,13 +282,14 @@ $("print").onclick=()=>{
   const box=$("printout"),table=element("table");box.replaceChildren(element("h1","Fechamento de repasses"),element("p",(demo?"Dados fictícios · ":"")+new Date().toLocaleString("pt-BR")));
   const selection = filter(), totals = Book.totals(selection);
   const summary = element("dl");
+  const amount = value => comparableAmount(value,selection.length,totals);
   for (const [label,value] of [["Grupos na seleção",selection.length],["Sem comparação conclusiva",totals.unpaired],
-    ["Previsto comparável",Book.money(totals.expected)],["Recebido comparável",Book.money(totals.received)],
-    ["Recebido a menos",Book.money(totals.short)],["Recebido a mais",Book.money(totals.extra)]]) {
+    ["Previsto comparável",amount(totals.expected)],["Recebido comparável",amount(totals.received)],
+    ["Recebido a menos",amount(totals.short)],["Recebido a mais",amount(totals.extra)]]) {
     summary.append(element("dt",label),element("dd",String(value)));
   }
   box.append(summary);
-  cells(table.createTHead().insertRow(),["Grupo","Situação","Previsto","Recebido","Diferença","Evidência"],"th");const body=table.createTBody();
-  for(const g of selection)cells(body.insertRow(),[g.kind+" "+g.id,[g.status,g.reason].filter(Boolean).join(" · "),Book.money(g.expected),Book.money(g.received),Book.money(g.difference),g.entries.map(e=>e.file+" L"+e.line).join(", ")]);
+  cells(table.createTHead().insertRow(),["Grupo","Loja","Plataforma","Situação","Previsto","Recebido","Diferença","Evidência"],"th");const body=table.createTBody();
+  for(const g of selection)cells(body.insertRow(),[g.kind+" "+g.id,...g.scope.map(value => value || "—"),[g.status,g.reason].filter(Boolean).join(" · "),Book.money(g.expected),Book.money(g.received),Book.money(g.difference),g.entries.map(e=>e.file+" L"+e.line).join(", ")]);
   box.append(table);window.print();
 };

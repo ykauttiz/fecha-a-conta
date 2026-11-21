@@ -41,6 +41,11 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         assert '"Loja"' in summary_csv and "Loja exemplo" in summary_csv
         page.locator("#status").select_option("Pendente")
         expect(page.locator("#segments tr td").nth(1)).to_have_text("—")
+        expect(page.locator("#metrics strong").first).to_have_text("—")
+        page.evaluate("window.print = () => {}")
+        page.locator("#print").click()
+        assert page.locator("#printout dd").nth(2).text_content() == "—"
+        assert "Loja exemplo" in page.locator("#printout tbody").text_content()
         page.locator("#status").select_option("")
         page.evaluate("window.print = () => {}")
         page.locator("#print").click()
