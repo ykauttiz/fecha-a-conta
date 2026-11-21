@@ -62,3 +62,7 @@ Na prévia de um CSV, guarde o mapeamento das colunas e reaplique-o quando plata
 [Ver testes e capturas de celular e computador](https://github.com/ykauttiz/fecha-a-conta/actions/workflows/conferencia.yml). Na execução, abra o artefato **capturas-chromium** ou **capturas-firefox**. As imagens usam dados fictícios.
 
 A impressão do fechamento inclui totais comparáveis, diferenças a mais e a menos e quantidade de grupos pendentes, junto das linhas de evidência da seleção.
+
+## Publicar uma versão
+
+Atualize `RELEASE.md` com as mudanças verificadas. Para marcar uma entrega, use na branch principal um commit com o título `release(vAAAA.MM.DD) Título da atualização`. Para uma segunda edição no mesmo dia, acrescente um número à versão, como `vAAAA.MM.DD.1`. O GitHub Actions publica a release após a aprovação dos testes. Commits comuns continuam atualizando o site.

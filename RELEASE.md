@@ -1,5 +1,3 @@
-## Novidades
+Quando a seleção só contém lançamentos pendentes, o painel e a impressão exibem um travessão nas quantias comparáveis. A impressão identifica a loja e a plataforma de cada grupo.
 
-A impressão do fechamento inclui totais comparáveis, diferenças a mais e a menos e quantidade de grupos pendentes, junto das linhas de evidência da seleção.
-
-[Experimentar](https://ykauttiz.github.io/fecha-a-conta/). [Histórico completo](https://github.com/ykauttiz/fecha-a-conta/blob/main/CHANGELOG.md).
+A suíte de navegador passou a exercitar os fluxos de uso em 320, 375 e 1280 pixels.
