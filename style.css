@@ -35,3 +35,21 @@ input::file-selector-button { padding:.45rem; margin-right:.5rem; background:#ff
   .metric {animation: reveal-state 220ms ease-out both}
   @keyframes reveal-state {from{opacity:.7;transform:translateY(3px)}to{opacity:1;transform:none}}
 }
+
+
+:root { --focus-ring:#99591b }
+.project-nav a { color:#104b3d }
+.hero { background: radial-gradient(ellipse at 95% 0%,#306b51,transparent 63%), #10392f }
+.receipt { border-radius:2px; border-top-color:#d7b268 }
+#balance { scroll-margin-top:1.5rem }
+
+.project-nav { display:flex; align-items:center; flex-wrap:wrap; gap:.35rem 1rem; padding:.25rem 0; margin:0 0 .75rem; border-block:1px solid currentColor }
+.project-nav a { display:inline-flex; align-items:center; min-height:44px; text-underline-offset:.24em }
+
+:is(a,button,summary,input,select,textarea):focus-visible { outline:3px solid var(--focus-ring); outline-offset:3px }
+section[id], h2[id] { scroll-margin-top:1rem }
+@media (prefers-reduced-motion:no-preference) {
+  html { scroll-behavior:smooth }
+  details[open] > summary ~ p { animation:details-open .2s ease-out both }
+  @keyframes details-open { from { opacity:.7; transform:translateY(3px) } to { opacity:1; transform:none } }
+}

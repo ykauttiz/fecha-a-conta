@@ -1,5 +1,9 @@
 # Fecha a Conta
 
+**Experimente em um minuto.** Abra o exemplo fictício, busque o pedido **0019** e abra a memória de cálculo. A diferença de **R$ 1,50** está ligada às linhas do pedido e do repasse.
+
+[Abrir demonstração](https://ykauttiz.github.io/fecha-a-conta/) · [Portfólio do Kauê](https://ykauttiz.github.io/contratempo/portfolio/)
+
 **Conferência local de pedidos, taxas e repasses de delivery em reais.** Abra a demonstração ou importe CSVs de uma loja. Cada resultado leva aos arquivos e linhas usados no cálculo.
 
 As exportações destinadas a planilhas tratam prefixos de fórmula ASCII, caracteres de controle e variantes Unicode conhecidas. A proteção é aplicada célula por célula antes de gerar o CSV.
