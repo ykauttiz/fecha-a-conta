@@ -60,3 +60,5 @@ O resumo por loja ou plataforma exibe até 25 linhas por página. **Baixar compa
 Na prévia de um CSV, guarde o mapeamento das colunas e reaplique-o quando plataforma, cabeçalho e tipo de arquivo coincidirem. O modelo guarda a correspondência dos campos.
 
 [Ver testes e capturas de celular e computador](https://github.com/ykauttiz/fecha-a-conta/actions/workflows/conferencia.yml). Na execução, abra o artefato **capturas-chromium** ou **capturas-firefox**. As imagens usam dados fictícios.
+
+A impressão do fechamento inclui totais comparáveis, diferenças a mais e a menos e quantidade de grupos pendentes, junto das linhas de evidência da seleção.

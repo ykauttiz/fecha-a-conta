@@ -278,7 +278,15 @@ function evidence(){
 $("export").onclick=()=>download("conferencia.csv","\uFEFF"+evidence().map(row=>row.map(Book.cell).join(";")).join("\r\n"),"text/csv;charset=utf-8");
 $("print").onclick=()=>{
   const box=$("printout"),table=element("table");box.replaceChildren(element("h1","Fechamento de repasses"),element("p",(demo?"Dados fictícios · ":"")+new Date().toLocaleString("pt-BR")));
+  const selection = filter(), totals = Book.totals(selection);
+  const summary = element("dl");
+  for (const [label,value] of [["Grupos na seleção",selection.length],["Sem comparação conclusiva",totals.unpaired],
+    ["Previsto comparável",Book.money(totals.expected)],["Recebido comparável",Book.money(totals.received)],
+    ["Recebido a menos",Book.money(totals.short)],["Recebido a mais",Book.money(totals.extra)]]) {
+    summary.append(element("dt",label),element("dd",String(value)));
+  }
+  box.append(summary);
   cells(table.createTHead().insertRow(),["Grupo","Situação","Previsto","Recebido","Diferença","Evidência"],"th");const body=table.createTBody();
-  for(const g of filter())cells(body.insertRow(),[g.kind+" "+g.id,[g.status,g.reason].filter(Boolean).join(" · "),Book.money(g.expected),Book.money(g.received),Book.money(g.difference),g.entries.map(e=>e.file+" L"+e.line).join(", ")]);
+  for(const g of selection)cells(body.insertRow(),[g.kind+" "+g.id,[g.status,g.reason].filter(Boolean).join(" · "),Book.money(g.expected),Book.money(g.received),Book.money(g.difference),g.entries.map(e=>e.file+" L"+e.line).join(", ")]);
   box.append(table);window.print();
 };

@@ -28,3 +28,10 @@ input::file-selector-button { padding:.45rem; margin-right:.5rem; background:#ff
 .segment tbody th {text-align:left;color:var(--ink)}
 .segment td {font-variant-numeric:tabular-nums;text-align:right}
 .segment td:nth-child(5){font-weight:750}
+
+#printout dl{display:grid;grid-template-columns:max-content 1fr;gap:.35em 1.4em}#printout dd{margin:0;font-variant-numeric:tabular-nums}
+
+@media (prefers-reduced-motion:no-preference){
+  .metric {animation: reveal-state 220ms ease-out both}
+  @keyframes reveal-state {from{opacity:.7;transform:translateY(3px)}to{opacity:1;transform:none}}
+}
