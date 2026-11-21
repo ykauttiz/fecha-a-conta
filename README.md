@@ -4,6 +4,8 @@
 
 [Abrir a conferência](https://ykauttiz.github.io/fecha-a-conta/) · [Histórico](CHANGELOG.md) · [Testes](https://github.com/ykauttiz/fecha-a-conta/actions/workflows/conferencia.yml)
 
+![Conferência dos pedidos e repasses da loja fictícia.](assets/demonstracao.webp)
+
 ## Primeiro fechamento
 
 1. Abra **Exemplo fictício**. O pedido 0017 vendeu R$ 85,00, com R$ 10,20 de comissão e R$ 5,00 de cupom da loja. Restaram R$ 69,80. Outro pedido acrescentou R$ 30,00 ao lote L01. Dois depósitos de R$ 60,00 e R$ 39,80 fecharam o lote.
