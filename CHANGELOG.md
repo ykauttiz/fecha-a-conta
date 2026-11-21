@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-21
+
+Um ID de evento repetido dentro do mesmo extrato mantém as linhas na memória de cálculo e leva o grupo para revisão.
+
 ## 2026-11-20 · Conciliação por lançamentos e lotes
 
 - Prévia de CSV e mapeamento de colunas, centavos exatos, comissão contratual por venda, subsídios, estornos e depósitos divididos.

@@ -104,6 +104,7 @@ const Book = (() => {
       const identity=JSON.stringify([source.side,source.store,source.platform,source.hash]);
       if (source.hash && seenFiles.has(identity)) continue;
       seenFiles.add(identity);
+      const fileEvents=new Set();
       for (const e of parseSource(source)) {
         const key=JSON.stringify([...e.scope,e.batch?"lote":"pedido",e.batch||e.order]);
         let group=groups.get(key);
@@ -115,7 +116,9 @@ const Book = (() => {
           const id=JSON.stringify([...e.scope,e.side,e.event]);
           const signature=JSON.stringify([key,e.order,e.date,e.type,String(e.value),String(e.fee)]);
           const first=byEvent.get(id);
-          if (first && first.signature===signature) continue;
+          if (fileEvents.has(id)) group.conflict=true;
+          fileEvents.add(id);
+          if (first && first.signature===signature && !group.conflict) continue;
           if (first) { first.group.conflict=true; group.conflict=true; }
           else byEvent.set(id,{group,signature});
         }
@@ -128,7 +131,7 @@ const Book = (() => {
       const expected=a.reduce((n,e)=>n+e.value-e.fee,0n), received=b.reduce((n,e)=>n+e.value,0n);
       const conflictingFees = a.some(e=>e.fee!==0n) && a.some(e=>e.type==="comissao");
       const mixed = a.some(e=>e.type==="liquido") && a.some(e=>e.type!=="liquido");
-      const reason=g.conflict?"ID de evento com conteúdos diferentes":ambiguous?"Vários lançamentos sem ID individual":mixed?"Líquido e componentes no mesmo grupo":conflictingFees?"Comissão explícita e calculada no mesmo grupo":!a.length?"Sem previsão correspondente":!b.length?"Sem repasse correspondente":"";
+      const reason=g.conflict?"ID de evento repetido no arquivo ou com conteúdos diferentes":ambiguous?"Vários lançamentos sem ID individual":mixed?"Líquido e componentes no mesmo grupo":conflictingFees?"Comissão explícita e calculada no mesmo grupo":!a.length?"Sem previsão correspondente":!b.length?"Sem repasse correspondente":"";
       const difference=reason ? null : received-expected;
       return {...g,expected:a.length?expected:null,received:b.length?received:null,difference,reason,
         status:reason?"Pendente":difference===0n?"Conferido":"Divergente"};

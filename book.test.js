@@ -55,3 +55,8 @@ test("10 mil pedidos e pagamentos não perdem centavos",()=>{
   const lines=Array.from({length:10000},(_,i)=>String(i).padStart(6,"0")+";0,01").join("\n");
   a.equal(B.totals(pair("pedido;previsto\n"+lines,"pedido;recebido\n"+lines)).received,10000n);
 });
+
+test("ID repetido dentro do mesmo extrato exige revisão sem perder linhas",()=>{
+  const [g]=pair("pedido;evento;valor\na;1;2\na;1;2","pedido;recebido\na;2");
+  a.equal(g.difference,null);a.equal(g.entries.length,3);
+});
