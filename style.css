@@ -555,3 +555,29 @@ footer{margin-top:2.7rem;padding:1.8rem 0;color:var(--app-muted)}
   .scroll-hint{display:block}
   .segment .scroll{scrollbar-width:thin;scrollbar-color:var(--app-accent) var(--app-soft)}
 }
+
+/* Terceiro nível de conciliação — base visivelmente distinta e responsiva. */
+.bank-panel{position:relative;border-top:3px solid #58c6db;overflow:hidden}
+.bank-panel::before{content:"";position:absolute;top:-110px;right:-100px;width:310px;height:280px;background:radial-gradient(circle,#50c7db1a,transparent 70%);pointer-events:none}
+.bank-heading{position:relative;display:flex;justify-content:space-between;gap:1.2rem;align-items:flex-start;flex-wrap:wrap}
+.bank-heading>div{flex:1 1 360px}
+.bank-kicker{color:var(--app-accent);font-size:.73rem;font-family:ui-monospace,monospace;font-weight:800;letter-spacing:.12em}
+.bank-heading h2{margin:.55rem 0}
+.bank-heading p{max-width:48rem;line-height:1.65}
+.bank-chip{font-size:.78rem;font-weight:750;border-radius:999px;padding:.55rem .8rem;background:var(--app-soft);color:var(--app-ink);border:1px solid var(--app-border)}
+.bank-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem;margin:1.35rem 0}
+.bank-metric{background:var(--app-surface-strong);border:1px solid var(--app-border);border-radius:15px;padding:1.05rem 1.15rem;min-width:0;color:var(--app-muted);font-size:.85rem;font-weight:680}
+.bank-metric strong{display:block;color:var(--app-ink);font-weight:800;font-size:clamp(1.05rem,2.5vw,1.8rem);letter-spacing:-.04em;font-variant-numeric:tabular-nums;margin-top:.45rem;overflow-wrap:anywhere}
+.bank-metric:nth-child(3){border-top:3px solid #e49b4b}
+.bank-metric:nth-child(4){border-top:3px solid #4fbc9c}
+.bank-caption{font-size:.85rem;color:var(--app-muted)}
+.bank-table{min-width:790px}
+.bank-table :is(th,td){white-space:nowrap;overflow-wrap:normal;word-break:normal}
+.bank-table th:first-child{min-width:140px}
+.bank-table td button{min-width:85px}
+.bank-disclaimer{font-size:.8rem;margin:1.1rem 0 .3rem;border-left:3px solid var(--app-accent);padding:.5rem .8rem;background:var(--app-soft);border-radius:0 8px 8px 0}
+.bank-import-note{grid-column:1/-1;margin:.3rem 0 .6rem;font-size:.85rem}
+:root[data-theme="dark"] :is(.bank-metric){background:var(--app-surface-strong);color:var(--app-muted);border-color:var(--app-border)}
+@media(max-width:950px){.bank-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:430px){.bank-metrics{grid-template-columns:1fr 1fr;gap:.6rem}.bank-metric{padding:.8rem}.bank-metric strong{font-size:1.18rem}}
+@media(prefers-reduced-motion:no-preference){.bank-metric{animation:premium-enter .45s both}.bank-metric:nth-child(2){animation-delay:.055s}.bank-metric:nth-child(3){animation-delay:.11s}.bank-metric:nth-child(4){animation-delay:.16s}}
