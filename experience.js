@@ -190,6 +190,18 @@
     }
     syncQuick();
   }
-  window.addEventListener("fecha:render",paintAttention);
+  function syncNavigation(){
+    const ready=isReady(),bank=ready&&!byId("bank-panel").hidden;
+    for(const link of document.querySelectorAll(".project-nav a[href^='#']")){
+      const target=link.getAttribute("href");
+      const requiresData=!["#main","#importar"].includes(target);
+      link.hidden=requiresData&&(!ready||(target==="#bank-panel"&&!bank));
+    }
+  }
+  window.addEventListener("fecha:render",()=>{
+    paintAttention();
+    syncNavigation();
+  });
   syncQuick();
+  syncNavigation();
 })();

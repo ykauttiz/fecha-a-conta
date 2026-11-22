@@ -73,6 +73,7 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         page.keyboard.press("Escape")
         expect(page.locator("#command-dialog")).to_be_hidden()
         page.get_by_role("combobox", name="Tema da interface").select_option("system")
+        expect(page.locator('.project-nav a[href="#insights"]')).to_be_hidden()
         theme = page.get_by_role("combobox", name="Tema da interface")
         for mode in ("dark", "light"):
             theme.select_option(mode)
@@ -96,6 +97,7 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         assert not errors, errors
         expect(page.locator("#metrics")).to_contain_text("R$ 1,50")
         expect(page.locator("#bank-panel")).to_be_visible()
+        expect(page.locator('.project-nav a[href="#insights"]')).to_be_visible()
         expect(page.locator("#bank-panel")).to_contain_text("R$ 0,50")
         assert page.locator("#bank-results tr").count() >= 2
         expect(page.locator("#attention-title")).to_contain_text("divergência")

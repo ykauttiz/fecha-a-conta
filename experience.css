@@ -318,3 +318,5 @@ kbd{
 @media print{
   .command-dialog,.reading-progress,.attention-strip{display:none!important}
 }
+
+.project-nav a[hidden]{display:none!important}
