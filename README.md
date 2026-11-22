@@ -66,6 +66,12 @@ Os modelos simples [pedidos.csv](pedidos.csv) e [repasses.csv](repasses.csv) con
 - O mesmo arquivo, lado, loja e plataforma é ignorado por SHA-256 do texto decodificado. Retire o arquivo antes de trocar seu mapeamento. Reexportações com ID e conteúdo financeiro idênticos contam uma vez. IDs em conflito, duplicatas ambíguas e mistura de líquido com componentes ficam pendentes. Sem ID de evento, use uma linha por lado por grupo.
 - O filtro de data seleciona o grupo se **qualquer evento** estiver no período e mantém o grupo completo. Valores sem par e grupos ambíguos ficam fora dos totais comparáveis. Uma revisão humana anota a investigação e preserva a diferença calculada.
 
+## Revisão da experiência e dos backups
+
+O destaque de próxima ação diferencia divergências do **repasse declarado** e do **CSV bancário**, sem declarar uma seleção conferida quando existe alguma pendência bancária. Há um filtro adicional por situação bancária e um comando específico para investigá-la. Nenhum desses indicadores equivale à confirmação automática de um depósito.
+
+A restauração também valida o tamanho e a estrutura das observações, impedindo a inclusão de registros de revisão malformados sem substituir a sessão atual.
+
 ## Garantias de isolamento e importação
 
 Conflitos de identificadores são analisados **por origem**. Um evento duplicado somente no CSV bancário não apaga uma comparação correta entre previsão e repasse declarado; um conflito na previsão não invalida a comparação independente entre repasse e depósito informado. Já um conflito no repasse declarado torna ambas as comparações inconclusivas.

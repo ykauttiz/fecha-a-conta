@@ -1,5 +1,11 @@
 # Changelog
 
+## 22 de novembro de 2026 · Revisão de estados e backups
+
+- Destaque de investigação prioriza diferenças monetárias tanto do marketplace quanto do arquivo bancário.
+- Filtro dedicado ao estado bancário, com acesso pela central de comandos, somente quando há CSV bancário.
+- Restauração reforçada: observações inválidas ou excessivamente grandes são rejeitadas sem destruir a sessão atual.
+
 ## 22 de novembro de 2026 · Auditoria de integridade e segurança
 
 - Isolamento de inconsistências por origem: problemas somente bancários deixam a conferência da plataforma intacta, e vice-versa.

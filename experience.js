@@ -36,6 +36,12 @@
       keywords:"insights gráficos eventos",requiresData:true,run:()=>go("insights")},
     {name:"Conciliação bancária",description:"Comparar repasse declarado e depósito no CSV",
       keywords:"banco depósito financeira",requiresBank:true,run:()=>go("bank-panel")},
+    {name:"Filtrar diferenças bancárias",description:"Exibir depósitos diferentes dos repasses declarados",
+      keywords:"banco depósito conciliação",requiresBank:true,run:()=>{
+        const select=byId("bank-status");select.value="Divergente";
+        select.dispatchEvent(new Event("input",{bubbles:true}));
+        go("results-section");
+      }},
     {name:"Filtrar divergentes",description:"Exibir somente pedidos e lotes com diferença",
       keywords:"diferença investigar pendência",requiresData:true,run:()=>changeStatus("Divergente")},
     {name:"Filtrar pendentes",description:"Exibir grupos que ainda não podem ser comparados",
@@ -57,8 +63,7 @@
   function find(query){
     const needle=normalized(query).trim();
     const available=action=>!action.requiresData||isReady();
-    const bankAvailable=action=>!action.requiresBank||isReady()&&!!document.querySelector('#files strong')&&
-      Array.from(document.querySelectorAll("#files p")).some(p=>p.textContent.includes("depósito informado"));
+    const bankAvailable=action=>!action.requiresBank||(isReady()&&!byId("bank-panel").hidden);
     const list=actions.filter(action=>{
       const haystack=normalized([action.name,action.description,action.keywords].join(" "));
       return !needle||haystack.includes(needle);
@@ -159,33 +164,42 @@
   function paintAttention(){
     if(!isReady())return;
     const list=app()?.getFilteredGroups()||[];
-    const different=list.filter(g=>g.status==="Divergente");
-    const pending=list.filter(g=>g.status==="Pendente");
+    const abs=n=>n<0n?-n:n;
+    const differences=[];
+    for(const group of list){
+      if(group.status==="Divergente"&&group.difference!==null)
+        differences.push({group,origin:"repasse declarado",value:group.difference});
+      if(group.bankStatus==="Divergente"&&group.bankDifference!==null)
+        differences.push({group,origin:"depósito informado no banco",value:group.bankDifference});
+    }
+    differences.sort((a,b)=>{
+      const aa=abs(a.value),bb=abs(b.value);
+      return aa===bb?0:aa>bb?-1:1;
+    });
+    const priority=differences[0];
+    const pending=list.filter(g=>g.status==="Pendente"||g.bankStatus==="Pendente");
     const heading=byId("attention-title"),copy=byId("attention-desc"),
       button=byId("attention-action"),panel=byId("attention-panel");
-    const priority=different.sort((a,b)=>{
-      const abs=g=>g.difference===null?0n:(g.difference<0n?-g.difference:g.difference);
-      const left=abs(a),right=abs(b);
-      return left===right?0:left>right?-1:1;
-    })[0];
-    const total=list.length;
     panel.dataset.state=priority?"divergent":pending.length?"pending":"clear";
     if(priority){
-      heading.textContent=different.length+" divergência(s) na seleção";
-      copy.textContent="Prioridade: "+priority.kind.toLowerCase()+" "+priority.id+" com diferença de "+
-        Book.money(priority.difference<0n?-priority.difference:priority.difference)+
-        ". Revise as evidências antes de tirar conclusões.";
-      button.hidden=false;
-      button.textContent="Investigar "+priority.kind.toLowerCase()+" "+priority.id;
-      button.onclick=()=>app()?.openGroup(priority.key);
+      heading.textContent=differences.length+" divergência(s) na seleção";
+      copy.textContent="Prioridade: "+priority.group.kind.toLowerCase()+" "+priority.group.id+
+        " · "+priority.origin+" · diferença absoluta de "+Book.money(abs(priority.value))+
+        ". Consulte os lançamentos originais antes de tirar conclusões.";
+      button.hidden=false;button.textContent="Investigar "+priority.group.kind.toLowerCase()+" "+priority.group.id;
+      button.onclick=()=>app()?.openGroup(priority.group.key);
     }else if(pending.length){
-      heading.textContent=pending.length+" grupo(s) aguardando dados";
-      copy.textContent="Não há diferenças calculadas nesta seleção, mas existem registros sem comparação conclusiva.";
+      heading.textContent=pending.length+" grupo(s) com verificação pendente";
+      copy.textContent="Há registros sem comparação conclusiva na plataforma ou no CSV bancário.";
       button.hidden=false;button.textContent="Examinar pendências";
-      button.onclick=()=>changeStatus("Pendente");
+      button.onclick=()=>{
+        const group=pending[0];
+        if(group.status==="Pendente")changeStatus("Pendente");
+        else app()?.openGroup(group.key);
+      };
     }else{
-      heading.textContent=total?"Seleção conferida":"Nenhum grupo selecionado";
-      copy.textContent=total?"Nenhuma divergência ou pendência nos grupos filtrados.":"Altere os filtros para consultar outros registros.";
+      heading.textContent=list.length?"Sem divergências na seleção":"Nenhum grupo selecionado";
+      copy.textContent=list.length?"Os dados disponíveis não indicaram diferenças nos grupos comparáveis. Isso não confirma depósitos bancários automaticamente.":"Altere os filtros para consultar outros registros.";
       button.hidden=true;
     }
     syncQuick();

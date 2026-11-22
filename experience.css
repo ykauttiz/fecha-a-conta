@@ -320,3 +320,6 @@ kbd{
 }
 
 .project-nav a[hidden]{display:none!important}
+
+/* Remover do fluxo visual o filtro bancário sem extrato correspondente. */
+.filters #bank-filter-label[hidden]{display:none!important}
