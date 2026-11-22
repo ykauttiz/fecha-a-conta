@@ -62,3 +62,16 @@ test("ID repetido dentro do mesmo extrato exige revisão sem perder linhas",()=>
   const [g]=pair("pedido;evento;valor\na;1;2\na;1;2","pedido;recebido\na;2");
   a.equal(g.difference,null);a.equal(g.entries.length,3);
 });
+
+test("sugestões conservadoras reconhecem cabeçalhos genéricos sem presumir layouts oficiais",()=>{
+  const headers=["Número do pedido","Valor líquido","Data do evento","Identificador de evento","Marketplace"];
+  const map=B.suggest(headers,"expected");
+  a.deepEqual([map.pedido,map.valor,map.data,map.evento,map.plataforma],[0,1,2,3,4]);
+  const input=src("expected","Número do pedido;Valor líquido;Data do evento\n0007;12,34;2026-11-20");
+  a.equal(B.parseSource(input)[0].value,1234n);
+  a.equal(B.parseSource(input)[0].order,"0007");
+  const ambiguous=B.suggest(["pedido_id","order_id","valor"],"expected");
+  a.equal(ambiguous.pedido,-1);
+  a.equal(ambiguous.valor,2);
+  a.equal(B.suggest(["pedido","pedido_id","valor"],"expected").pedido,0);
+});

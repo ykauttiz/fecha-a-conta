@@ -58,11 +58,31 @@ const Book = (() => {
     return {headers, records};
   }
   function suggest(headers,side) {
-    const names = headers.map(h=>h.trim().toLowerCase());
-    return Object.fromEntries(fields.map(f=>{
-      let i = names.indexOf(f);
-      if (f === "valor" && i < 0) i = names.indexOf(side === "expected" ? "previsto" : "recebido");
-      return [f,i];
+    // Cabeçalhos equivalentes genéricos — não são layouts oficiais de plataformas.
+    // Prefere o nome canônico; alternativas só são escolhidas quando há um único candidato.
+    const names=headers.map(h=>h.trim().toLowerCase().normalize("NFD")
+      .replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,""));
+    const aliases={
+      pedido:["id_pedido","pedido_id","numero_pedido","numero_do_pedido","order_id","n_pedido"],
+      lote:["id_lote","lote_id","numero_lote"],
+      valor:["valor_liquido","valor_liquido_previsto","valor_repassado","montante"],
+      evento:["id_evento","evento_id","identificador_de_evento","transaction_id"],
+      tipo:["tipo_evento","tipo_lancamento","tipo_de_lancamento"],
+      data:["data_evento","data_do_evento","date"],
+      loja:["nome_loja","loja_nome","id_loja"],
+      plataforma:["canal","marketplace","origem_plataforma"]
+    };
+    const chosen=new Set();
+    return Object.fromEntries(fields.map(field=>{
+      let index=names.indexOf(field);
+      if(index<0&&field==="valor")index=names.indexOf(side==="expected"?"previsto":"recebido");
+      if(index<0){
+        const candidates=names.flatMap((name,i)=>(aliases[field]||[]).includes(name)?[i]:[]);
+        index=candidates.length===1?candidates[0]:-1;
+      }
+      if(chosen.has(index))index=-1;
+      if(index>=0)chosen.add(index);
+      return [field,index];
     }));
   }
   function validDate(date) {
