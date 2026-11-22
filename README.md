@@ -22,6 +22,14 @@ O painel apresenta gráficos de situação, distribuição dos grupos e contagem
 
 O design recebeu uma camada visual tecnológica, com superfícies premium, novas hierarquias, efeitos suaves de entrada, microinterações, temas refinados e layout específico para telas menores. Animações respeitam movimento reduzido.
 
+## Central de comandos, navegação e investigação
+
+A interface agora possui **central de comandos** acessível pelo botão do cabeçalho, por **Ctrl/⌘ + K** ou pela tecla **/** quando o foco não estiver em um campo. Pesquise ações, pedidos ou lotes da sessão. É possível abrir diretamente as evidências de um grupo, navegar entre seções, exportar um backup e alternar os temas sem sair da tela.
+
+Os **filtros rápidos** permitem isolar divergentes, pendentes ou conferidos. Uma faixa de **próxima ação** indica a maior diferença absoluta entre os grupos filtrados, sem insinuar fraude ou cobrança indevida. O formulário acompanha as etapas de importação, validação de colunas e investigação.
+
+As animações da interface foram ampliadas com transições progressivas, realces e feedbacks sem dependências externas. Movimento reduzido continua respeitado, e os atalhos não interferem na digitação em campos.
+
 ## Aparência e navegação
 
 No cabeçalho, escolha **Sistema**, **Claro** ou **Escuro**. Sistema acompanha o aparelho. O navegador guarda a escolha localmente para a próxima visita. Use Tab para chegar ao atalho de conteúdo e aos controles. As transições respeitam a preferência de movimento reduzido.

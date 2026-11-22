@@ -5,6 +5,13 @@ const say=text=>{$("message").textContent=text;};
 const sideLabel=side=>({expected:"previsão calculada",received:"repasse declarado",bank:"depósito informado no CSV bancário"}[side]||"origem desconhecida");
 const labels={pedido:"Pedido",lote:"Lote",valor:"Valor (R$)",evento:"ID do evento",tipo:"Tipo",data:"Data do evento",loja:"Loja",plataforma:"Plataforma"};
 let sources=[],groups=[],notes=[],draft=[],selected=null,page=1,version=0,worker=null,demo=false;
+function setWorkflow(stage){
+  for(const [index,step] of [...document.querySelectorAll("#workflow-steps .workflow-step")].entries()){
+    const current=index===stage;
+    step.dataset.progress=index<stage?"done":current?"active":"future";
+    if(current)step.setAttribute("aria-current","step");else step.removeAttribute("aria-current");
+  }
+}
 const demoSources=[
   {side:"expected",name:"pedidos-exemplo.csv",text:"pedido;lote;evento;tipo;valor;data\n0017;L01;v17;venda;85,00;2026-10-30\n0017;L01;c17;comissao;10,20;2026-10-30\n0017;L01;d17;desconto_loja;5,00;2026-10-30\n0018;L01;v18;venda;30,00;2026-10-31\n0019;;v19;venda;40,00;2026-11-01\n0020;;v20;venda;24,00;2026-11-01"},
   {side:"received",name:"repasses-exemplo.csv",text:"pedido;lote;evento;tipo;valor;data\n;L01;p1;repasse;60,00;2026-11-02\n;L01;p2;repasse;39,80;2026-11-03\n0019;;p3;repasse;38,50;2026-11-03\n0021;;p4;repasse;12,00;2026-11-03"},
@@ -48,6 +55,7 @@ function options(select,values,all) {
 function commit(list,result,history,isDemo) {
   sources=list;groups=result;notes=history;demo=isDemo;selected=null;page=1;
   draft=[];$("preview").hidden=true;$("workspace").hidden=!sources.length;
+  setWorkflow(sources.length?2:0);
   $("origin").textContent=isDemo?"Dados fictícios":sources.length+" arquivo(s) nesta sessão";
   options($("shop"),[...new Set(groups.map(g=>g.scope[0]).filter(Boolean))].sort(),"Todas");
   options($("channel"),[...new Set(groups.map(g=>g.scope[1]).filter(Boolean))].sort(),"Todas");
@@ -209,6 +217,7 @@ function render() {
     row.insertCell().append(badge);cells(row,[g.expected,g.received,g.difference].map(Book.money));return row;
   }));
   const current=list.find(g=>g.key===selected);$("detail").hidden=!current;if(current)detail(current);
+  window.dispatchEvent(new Event("fecha:render"));
 }
 function detail(g) {
   const box=$("detail");box.hidden=false;box.replaceChildren();
@@ -273,7 +282,7 @@ $("import").onsubmit=async event=>{
       return {side,name:file.name,text,store,platform,rate,hash:await digest(text),at:new Date().toISOString()};
     }));
     if(id!==version)return;
-    const nodes=prepared.map(mapping);draft=prepared;$("maps").replaceChildren(...nodes);$("preview").hidden=false;say("Confira os campos e a primeira linha antes de incluir.");
+    const nodes=prepared.map(mapping);draft=prepared;$("maps").replaceChildren(...nodes);$("preview").hidden=false;setWorkflow(1);say("Confira os campos e a primeira linha antes de incluir.");
   }catch(e){if(id===version)say(e.message);}
 };
 function sourceId(s){return JSON.stringify([s.side,s.store,s.platform,s.hash]);}
@@ -287,7 +296,7 @@ $("confirm").onclick=()=>{
     calculate(list,id,result=>{commit(list,result,demo?[]:notes,false);say("Importação concluída."+ (skipped?" Arquivo já incluído foi ignorado.":""));});
   }catch(e){say(e.message);}
 };
-$("cancel").onclick=()=>{stop();say("Prévia cancelada.");};
+$("cancel").onclick=()=>{stop();setWorkflow(sources.length?2:0);say("Prévia cancelada.");};
 $("demo").onclick=()=>{if(sources.length&&!demo&&!confirm("Substituir o fechamento atual pelo exemplo fictício?"))return;
   stop();commit(demoSources,Book.reconcile(demoSources),[],true);say("Exemplo fictício carregado.");$("workspace").scrollIntoView();};
 $("clear").onclick=()=>{if(!confirm("Limpar os dados desta página? Baixe um backup se quiser retomá-los."))return;stop();commit([],[],[],false);$("import").reset();say("Fechamento limpo.");};
@@ -347,4 +356,25 @@ $("print").onclick=()=>{
   cells(table.createTHead().insertRow(),["Grupo","Loja","Plataforma","Situação","Previsto","Repasse declarado","Diferença","Evidência","Depósito no CSV","Diferença bancária"],"th");const body=table.createTBody();
   for(const g of selection)cells(body.insertRow(),[g.kind+" "+g.id,...g.scope.map(value => value || "—"),[g.status,g.reason].filter(Boolean).join(" · "),Book.money(g.expected),Book.money(g.received),Book.money(g.difference),g.entries.map(e=>e.file+" L"+e.line).join(", "),Book.money(g.bank),Book.money(g.bankDifference)]);
   box.append(table);window.print();
+};
+
+/* API mínima de interface. Não expõe credenciais nem transfere dados. */
+window.FechaApp={
+  getFilteredGroups:()=>filter(),
+  searchGroups:(query)=>{
+    const normalized=value=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+    const needle=normalized(query).trim();
+    if(!needle)return [];
+    return groups.filter(g=>[g.id,g.kind,...g.scope].some(value=>normalized(value).includes(needle)))
+      .slice(0,8).map(g=>({key:g.key,id:g.id,kind:g.kind,scope:g.scope,status:g.status}));
+  },
+  openGroup:key=>{
+    const match=groups.find(g=>g.key===key);
+    if(!match)return false;
+    for(const id of filterFields)$(id).value="";
+    page=1;selected=key;render();
+    const panel=$("detail");
+    if(!panel.hidden){panel.scrollIntoView({block:"start",behavior:"auto"});panel.querySelector("h2").focus();}
+    return !panel.hidden;
+  }
 };

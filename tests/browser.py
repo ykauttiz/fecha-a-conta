@@ -60,6 +60,19 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         page.goto(f"http://127.0.0.1:{server.server_port}/")
         assert page.evaluate("!!document.querySelector('link[rel~=icon]')"), "falta o ícone da página"
         assert page.evaluate("(document.querySelector('meta[name=description]')?.content || '').length >= 50"), "falta a descrição da página"
+        # Navegação por comandos antes do carregamento de dados.
+        page.locator("#command-open").click()
+        expect(page.locator("#command-dialog")).to_be_visible()
+        expect(page.locator("#command-search")).to_be_focused()
+        page.locator("#command-search").fill("tema escuro")
+        expect(page.locator("#command-results")).to_contain_text("Ativar tema escuro")
+        page.get_by_role("button",name="Ativar tema escuro").click()
+        expect(page.locator("html")).to_have_attribute("data-theme","dark")
+        expect(page.locator("#command-dialog")).to_be_hidden()
+        page.locator("#command-open").click()
+        page.keyboard.press("Escape")
+        expect(page.locator("#command-dialog")).to_be_hidden()
+        page.get_by_role("combobox", name="Tema da interface").select_option("system")
         theme = page.get_by_role("combobox", name="Tema da interface")
         for mode in ("dark", "light"):
             theme.select_option(mode)
@@ -85,6 +98,20 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         expect(page.locator("#bank-panel")).to_be_visible()
         expect(page.locator("#bank-panel")).to_contain_text("R$ 0,50")
         assert page.locator("#bank-results tr").count() >= 2
+        expect(page.locator("#attention-title")).to_contain_text("divergência")
+        expect(page.locator("#workflow-steps [aria-current=step]")).to_contain_text("Investigar")
+        # Comandos usam grupos reais, preservando o cálculo.
+        page.locator("#command-open").click()
+        page.locator("#command-search").fill("0019")
+        expect(page.locator('#command-results button[data-kind="group"]')).to_contain_text("Pedido 0019")
+        page.locator('#command-results button[data-kind="group"]').click()
+        expect(page.locator("#detail")).to_contain_text("Pedido 0019")
+        expect(page.locator("#command-dialog")).to_be_hidden()
+        page.locator('[data-quick-status="Divergente"]').click()
+        expect(page.locator("#results tr")).to_have_count(1)
+        expect(page.locator('[data-quick-status="Divergente"]')).to_have_attribute("aria-pressed","true")
+        page.locator('[data-quick-status=""]').click()
+        expect(page.locator('[data-quick-status=""]')).to_have_attribute("aria-pressed","true")
         expect(page.locator("#insights-cards")).to_contain_text("Grupos na seleção")
         expect(page.locator("#insights-status")).to_have_attribute("role", "img")
         # Rótulos de datas não devem se sobrepor nos layouts testados.
@@ -154,8 +181,10 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         panel.get_by_text("Guardar mapeamento neste navegador",exact=True).click()
         panel.get_by_text("Aplicar mapeamento guardado",exact=True).click()
         expect(page.locator("#message")).to_contain_text("Mapeamento aplicado")
+        expect(page.locator("#workflow-steps [aria-current=step]")).to_contain_text("Validar")
         page.locator("#confirm").click()
         expect(page.locator("#origin")).to_have_text("2 arquivo(s) nesta sessão")
+        expect(page.locator("#workflow-steps [aria-current=step]")).to_contain_text("Investigar")
         expect(page.locator("#bank-panel")).to_be_hidden()
         page.get_by_text("Preparar prévia", exact=True).click()
         page.locator("#confirm").click()
@@ -209,6 +238,12 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         expect(page.locator("#bank-panel")).to_be_visible()
         expect(page.locator("#bank-panel")).to_contain_text("R$ 0,50")
         assert not errors, errors
+        # Movimento reduzido não depende de animação de entrada.
+        page.emulate_media(reduced_motion="reduce")
+        page.locator("#command-open").click()
+        expect(page.locator("#command-dialog")).to_be_visible()
+        assert page.evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches")
+        page.keyboard.press("Escape")
         page.close()
     browser.close()
 server.shutdown()

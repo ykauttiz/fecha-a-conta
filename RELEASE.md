@@ -1,20 +1,25 @@
-# Fecha a Conta · Conciliação em três níveis
+# Fecha a Conta · Experiência premium e navegação inteligente
 
-## Mudanças verificáveis
+## Melhorias
 
-- Entrada opcional de depósitos bancários em CSV, distinguindo **previsão**, **repasse declarado** e **depósito importado**.
-- Comparação independente plataforma × banco por pedido ou lote, sem associação por aproximação.
-- Painel de conciliação bancária com valores comparáveis e pendências explicitadas.
-- Backup, restauração, tabelas, memória de cálculo, impressão e evidências CSV ampliados.
-- Regras monetárias usando centavos inteiros e testes para repasses divididos, diferenças e eventos ambíguos.
-- Favicon SVG sem dependência externa e apresentação premium preservada.
+- Nova central de comandos com busca de ações, pedidos e lotes; atalhos Ctrl/⌘+K e /.
+- Filtros rápidos e prioridade contextual de investigação, baseada na maior diferença absoluta dos dados selecionados.
+- Fluxo de três etapas durante importação, validação e investigação.
+- Navegação refinada por seções, estilo premium, microinterações e motion design consistente.
+- Transições e animações respeitam a preferência de movimento reduzido; navegação por teclado e layout móvel testados.
+- Sem alteração no motor de conciliação, valores monetários, backup ou transmissão de dados.
 
-## Demonstração
+## Como verificar
 
-Use o exemplo fictício. O lote L01 demonstra dois depósitos que somam o repasse declarado, e o pedido 0019 demonstra uma diferença bancária fictícia de R$ 0,50. Nenhum dado da demo é real.
+1. Abra a [demonstração](https://ykauttiz.github.io/fecha-a-conta/).
+2. Pressione **Ctrl+K** ou use **Buscar ações e pedidos**.
+3. Abra o exemplo fictício e busque **0019** na central.
+4. Experimente os filtros rápidos **Divergentes** e **Pendentes**.
+5. Confira a indicação da próxima ação e as etapas do fechamento.
+6. Teste os temas e o layout no celular.
 
-[Site](https://ykauttiz.github.io/fecha-a-conta/) · [Repositório](https://github.com/ykauttiz/fecha-a-conta)
+## Segurança e limites
 
-## Limitações
+Todos os dados financeiros continuam processados no navegador. A central consulta apenas a sessão carregada no próprio dispositivo. Nenhuma integração bancária automática foi adicionada.
 
-O aplicativo não acessa contas bancárias e não confirma depósitos automaticamente. A comparação opcional só funciona com CSVs que contenham chaves compatíveis de pedido/lote, loja e plataforma. Integrações oficiais com marketplaces e formatos bancários não validados continuam pendentes.
+[Changelog](CHANGELOG.md) · [Código](https://github.com/ykauttiz/fecha-a-conta)

@@ -1,4 +1,4 @@
-# Changelog
+NaN
 
 ## 22 de novembro de 2026 · Conciliação em três níveis
 
