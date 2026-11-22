@@ -184,6 +184,9 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         expect(page.locator("#message")).to_contain_text("linha 2")
         expect(page.locator("#results")).to_contain_text("Lote L01")
 
+        page.locator("#reset-filters").click()
+        page.locator("#orders").set_input_files([])
+        page.locator("#payments").set_input_files([])
         page.locator("#bank").set_input_files({"name":"depositos-lote.csv","mimeType":"text/csv",
             "buffer":b"pedido;lote;evento;valor\n;L01;b01;60,00\n;L01;b02;39,80\n0019;;b03;38,00"})
         page.get_by_text("Preparar prévia", exact=True).click()
