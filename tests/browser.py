@@ -80,6 +80,7 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         assert page.evaluate("location.hash === document.querySelector('.skip').hash")
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         page.locator("#demo").click()
+        assert not errors, errors
         expect(page.locator("#metrics")).to_contain_text("R$ 1,50")
         expect(page.locator("#bank-panel")).to_be_visible()
         expect(page.locator("#bank-panel")).to_contain_text("R$ 0,50")
