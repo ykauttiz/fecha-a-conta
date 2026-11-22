@@ -242,7 +242,7 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         page.locator("#confirm").click()
         expect(page.locator("#bank-panel")).to_be_visible()
         expect(page.locator("#bank-filter-label")).to_be_visible()
-        expect(page.locator("#bank-panel")).to_contain_text("R$ 0,50")
+        expect(page.locator("#bank-panel")).to_contain_text("R$ -0,50")
         # Mesmo com plataforma conferida, diferença bancária aparece como prioridade.
         page.locator("#status").select_option("Conferido")
         expect(page.locator("#attention-panel")).to_contain_text("depósito informado no banco")
@@ -257,7 +257,7 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         page.get_by_text("Restaurar um fechamento", exact=True).click()
         page.locator("#restore").set_input_files(bank_file)
         expect(page.locator("#bank-panel")).to_be_visible()
-        expect(page.locator("#bank-panel")).to_contain_text("R$ 0,50")
+        expect(page.locator("#bank-panel")).to_contain_text("R$ -0,50")
         # Histórico adulterado falha sem substituir os arquivos já restaurados.
         altered = json.loads(bank_file.read_text(encoding="utf-8"))
         altered["notes"] = [{
