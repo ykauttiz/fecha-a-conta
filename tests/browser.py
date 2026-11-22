@@ -72,6 +72,10 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         page.locator("#command-open").click()
         page.keyboard.press("Escape")
         expect(page.locator("#command-dialog")).to_be_hidden()
+        page.keyboard.press("Control+k")
+        expect(page.locator("#command-dialog")).to_be_visible()
+        page.keyboard.press("Escape")
+        expect(page.locator("#command-dialog")).to_be_hidden()
         page.get_by_role("combobox", name="Tema da interface").select_option("system")
         expect(page.locator('.project-nav a[href="#insights"]')).to_be_hidden()
         theme = page.get_by_role("combobox", name="Tema da interface")
@@ -131,6 +135,9 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
             page.evaluate("document.querySelector('.skip').focus()")
             page.wait_for_timeout(300)
             assert not page.evaluate(CONTRAST_SCAN), (mode, width, page.evaluate(CONTRAST_SCAN))
+            page.locator("#command-open").click()
+            assert not page.evaluate(CONTRAST_SCAN), ("comandos", mode, width, page.evaluate(CONTRAST_SCAN))
+            page.keyboard.press("Escape")
             page.evaluate("document.activeElement.blur()")
         theme.select_option("system")
         if os.environ.get("CAPTURAR_DEMO") == "1":
@@ -138,6 +145,9 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
             captures.mkdir(exist_ok=True)
             page.evaluate("scrollTo(0, 0)")
             page.screenshot(path=captures / f"demo-{width}.png", animations="disabled", full_page=True)
+            page.locator("#command-open").click()
+            page.screenshot(path=captures / f"comandos-{width}.png", animations="disabled")
+            page.keyboard.press("Escape")
 
         expect(page.locator("#segments")).to_contain_text("Delivery")
         assert page.evaluate("getComputedStyle(document.querySelector('.segment th')).whiteSpace") == 'nowrap'
