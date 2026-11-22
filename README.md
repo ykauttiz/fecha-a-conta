@@ -75,6 +75,12 @@ Na prévia de um CSV, guarde o mapeamento das colunas e reaplique-o quando plata
 
 A impressão do fechamento inclui totais comparáveis, diferenças a mais e a menos e quantidade de grupos pendentes, junto das linhas de evidência da seleção.
 
+## Privacidade, segurança e contribuição
+
+Os extratos são lidos e calculados no navegador e não são enviados a nenhum servidor. O backup JSON inclui os dados originais importados e as notas de revisão: guarde-o como um arquivo financeiro. Nunca publique extratos reais em issues ou pull requests.
+
+Para relatar uma falha, veja [SECURITY.md](SECURITY.md). Para propor mudanças, veja [CONTRIBUTING.md](CONTRIBUTING.md). Use somente dados fictícios ou anonimizados em issues e pull requests.
+
 ## Publicar uma versão
 
 Atualize `RELEASE.md` com as mudanças verificadas. Para marcar uma entrega, use na branch principal um commit com o título `release(vAAAA.MM.DD) Título da atualização`. Para uma segunda edição no mesmo dia, acrescente um número à versão, como `vAAAA.MM.DD.1`. O GitHub Actions publica a release após a aprovação dos testes. Commits comuns continuam atualizando o site.
