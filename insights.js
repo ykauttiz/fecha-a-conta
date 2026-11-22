@@ -107,7 +107,7 @@
         bar.style.height=Math.max(6,Math.round(count/max*100))+"%";
         bar.title=count+" lançamento(s) em "+date;
         bar.setAttribute("aria-label",count+" lançamentos em "+date);
-        col.append(node("small",count,"insight-spark-num"),bar,node("small",date.slice(5),"insight-spark-date"));
+        col.append(node("small",count,"insight-spark-num"),bar,node("small",date.slice(8)+"/"+date.slice(5,7),"insight-spark-date"));
         plot.append(col);
       }
       events.append(plot);

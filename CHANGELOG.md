@@ -1,5 +1,16 @@
 # Changelog
 
+## 22 de novembro de 2026 · Conciliação em três níveis
+
+- Rótulos de datas no gráfico foram abreviados para dia/mês e otimizados para telas estreitas; teste visual verifica sobreposição.
+
+- Importação opcional de CSV com depósitos bancários informados, separada de previsões e repasses declarados.
+- Conciliação por identificadores verificáveis, sem distribuição arbitrária de depósitos.
+- Painel plataforma × banco, diferenças próprias e evidências/exportações com origem explícita.
+- Backups compatíveis com sessões antigas e suporte à nova origem bancária, com testes de unidade e navegador.
+- Ícone SVG próprio na aba e validação de metadados no navegador; preserva o trabalho do PR #5 sem substituir o design recente.
+
+
 ## 22 de novembro de 2026 · Interface premium e insights da conciliação
 
 - Tabelas com cabeçalhos íntegros e rolagem horizontal orientada em telas estreitas.

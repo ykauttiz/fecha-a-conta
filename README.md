@@ -4,7 +4,7 @@
 
 [Abrir demonstração](https://ykauttiz.github.io/fecha-a-conta/) · [Portfólio do Kauê](https://ykauttiz.github.io/contratempo/portfolio/)
 
-**Conferência local de pedidos, taxas e repasses de delivery em reais.** Abra a demonstração ou importe CSVs de uma loja. Cada resultado leva aos arquivos e linhas usados no cálculo.
+**Conferência local de pedidos, taxas, repasses declarados e depósitos informados em CSV em reais.** Abra a demonstração ou importe CSVs de uma loja. Cada resultado leva aos arquivos e linhas usados no cálculo.
 
 As exportações destinadas a planilhas tratam prefixos de fórmula ASCII, caracteres de controle e variantes Unicode conhecidas. A proteção é aplicada célula por célula antes de gerar o CSV.
 
@@ -29,12 +29,12 @@ No cabeçalho, escolha **Sistema**, **Claro** ou **Escuro**. Sistema acompanha o
 ## Primeiro fechamento
 
 1. Abra **Exemplo fictício**. O pedido 0017 vendeu R$ 85,00, com R$ 10,20 de comissão e R$ 5,00 de cupom da loja. Restaram R$ 69,80. Outro pedido acrescentou R$ 30,00 ao lote L01. Dois depósitos de R$ 60,00 e R$ 39,80 fecharam o lote.
-2. Para usar seus extratos, escolha o CSV de pedidos e/ou o de repasses. Se reunir várias lojas ou plataformas, identifique-as nos arquivos ou nos campos da importação.
+2. Para usar seus extratos, escolha o CSV de pedidos e/ou o de repasses. Opcionalmente, acrescente um CSV bancário cujos registros tenham identificadores de pedido ou lote correspondentes. Se reunir várias lojas ou plataformas, identifique-as nos arquivos ou nos campos da importação.
 3. Prepare a prévia, associe cada campo a sua coluna e confira a primeira linha. A importação valida todas as linhas antes de atualizar o fechamento. A primeira importação própria substitui o exemplo.
 4. Clique no pedido ou lote para abrir a memória de cálculo. Registre o motivo de uma revisão, baixe as evidências CSV ou imprima a seleção inteira para PDF.
 5. Baixe um backup JSON antes de fechar a aba. O backup inclui os dados originais e as notas de revisão em texto legível. Para retomá-lo, abra **Restaurar um fechamento**. O site processa os arquivos no navegador, sem cadastro.
 
-[Pedidos do exemplo](exemplos/pedidos-lote.csv) · [Repasses do exemplo](exemplos/repasses-lote.csv)
+[Pedidos do exemplo](exemplos/pedidos-lote.csv) · [Repasses do exemplo](exemplos/repasses-lote.csv) · [Depósitos fictícios](exemplos/depositos-lote.csv)
 
 ## Colunas e valores
 
@@ -47,7 +47,7 @@ No cabeçalho, escolha **Sistema**, **Claro** ou **Escuro**. Sistema acompanha o
 | data | Data do evento em AAAA-MM-DD. A competência e o pagamento podem cair em meses diferentes. |
 | loja, plataforma | Mantêm registros de origens diferentes separados. Os valores das colunas prevalecem sobre os dados gerais do arquivo. |
 
-Os modelos simples [pedidos.csv](pedidos.csv) e [repasses.csv](repasses.csv) continuam aceitos. No formato simples, o valor previsto já é líquido. Aceitamos UTF-8 com ou sem BOM, ponto e vírgula ou vírgula, aspas duplas escapadas e quebras de linha em campos entre aspas. O limite é 4 MiB e 50 mil linhas por arquivo, até 50 arquivos e 16 milhões de caracteres por sessão.
+Os modelos simples [pedidos.csv](pedidos.csv) e [repasses.csv](repasses.csv) continuam aceitos. No formato simples, o valor previsto já é líquido. Para depósitos bancários, use `tipo=deposito` quando houver coluna `tipo`, ou omita-a para assumir depósito; mantenha chaves de pedido ou lote compatíveis com os repasses. Uma linha bancária sem vínculo verificável não é distribuída por aproximação. Aceitamos UTF-8 com ou sem BOM, ponto e vírgula ou vírgula, aspas duplas escapadas e quebras de linha em campos entre aspas. O limite é 4 MiB e 50 mil linhas por arquivo, até 50 arquivos e 16 milhões de caracteres por sessão.
 
 ## Como os valores são conferidos
 
@@ -58,9 +58,17 @@ Os modelos simples [pedidos.csv](pedidos.csv) e [repasses.csv](repasses.csv) con
 - O mesmo arquivo, lado, loja e plataforma é ignorado por SHA-256 do texto decodificado. Retire o arquivo antes de trocar seu mapeamento. Reexportações com ID e conteúdo financeiro idênticos contam uma vez. IDs em conflito, duplicatas ambíguas e mistura de líquido com componentes ficam pendentes. Sem ID de evento, use uma linha por lado por grupo.
 - O filtro de data seleciona o grupo se **qualquer evento** estiver no período e mantém o grupo completo. Valores sem par e grupos ambíguos ficam fora dos totais comparáveis. Uma revisão humana anota a investigação e preserva a diferença calculada.
 
+## Terceiro nível: plataforma × banco (CSV opcional)
+
+O relatório da plataforma e o extrato do banco são **fontes diferentes**. O campo "Repasses declarados" representa o que o arquivo importado informa; ele não confirma dinheiro creditado na conta. Para comparar com os depósitos, importe um CSV separado de banco na terceira entrada. O sistema soma depósitos por identificador de pedido ou lote, loja e plataforma, aceita depósitos divididos com IDs de evento exclusivos e informa diferenças em centavos.
+
+O painel **Plataforma × banco** apresenta valores somente quando há uma correspondência verificável. Depósitos sem correspondência ou duplicidades ambíguas permanecem pendentes, sem imputar pagamento indevido ou omissão do banco. Os dados são processados no navegador; não existem conexões bancárias, integração OFX automática ou autorização de débito. O backup JSON continua compatível com versões anteriores e agora pode incluir a terceira origem.
+
+**Atenção:** se um extrato bancário não identifica pedido ou lote, será necessário obter uma referência de conciliação legítima. O programa não adivinha vínculos por valor, data ou semelhança.
+
 ## iFood e 99Food
 
-O iFood descreve um relatório mensal atualizado por eventos. A 99Food documenta pagamentos divididos. Ambos os casos motivam o uso de lotes, datas de eventos e importação incremental. A importação disponível é por mapeamento de CSV. A escolha da plataforma identifica a origem. Para homologar um layout específico, ainda são necessárias amostras autorizadas e anonimizadas com totais conhecidos. Não há conexão com contas ou API das plataformas. Os valores do lado **recebido** são informados nos arquivos importados; o sistema não verifica depósitos bancários automaticamente.
+O iFood descreve um relatório mensal atualizado por eventos. A 99Food documenta pagamentos divididos. Ambos os casos motivam o uso de lotes, datas de eventos e importação incremental. A importação disponível é por mapeamento de CSV. A escolha da plataforma identifica a origem. O terceiro arquivo bancário é opcional e deve usar as mesmas chaves e escopo para comparação. Para homologar um layout específico, ainda são necessárias amostras autorizadas e anonimizadas com totais conhecidos. Não há conexão com contas ou API das plataformas. Os valores do lado **recebido** são informados nos arquivos importados; o sistema não verifica depósitos bancários automaticamente.
 
 [Relatório de conciliação do iFood](https://blog-parceiros.ifood.com.br/relatorio-de-conciliacao/) · [Pagamento dividido da 99Food](https://99app.com/99food/restaurantes/guias/como-acompanhar-seus-repasses-e-entender-o-novo-pagamento-dividido/)
 

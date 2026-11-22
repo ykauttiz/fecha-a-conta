@@ -2,11 +2,13 @@
 const $=id=>document.getElementById(id);
 const element=(tag,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;return node;};
 const say=text=>{$("message").textContent=text;};
+const sideLabel=side=>({expected:"previsão calculada",received:"repasse declarado",bank:"depósito informado no CSV bancário"}[side]||"origem desconhecida");
 const labels={pedido:"Pedido",lote:"Lote",valor:"Valor (R$)",evento:"ID do evento",tipo:"Tipo",data:"Data do evento",loja:"Loja",plataforma:"Plataforma"};
 let sources=[],groups=[],notes=[],draft=[],selected=null,page=1,version=0,worker=null,demo=false;
 const demoSources=[
   {side:"expected",name:"pedidos-exemplo.csv",text:"pedido;lote;evento;tipo;valor;data\n0017;L01;v17;venda;85,00;2026-10-30\n0017;L01;c17;comissao;10,20;2026-10-30\n0017;L01;d17;desconto_loja;5,00;2026-10-30\n0018;L01;v18;venda;30,00;2026-10-31\n0019;;v19;venda;40,00;2026-11-01\n0020;;v20;venda;24,00;2026-11-01"},
-  {side:"received",name:"repasses-exemplo.csv",text:"pedido;lote;evento;tipo;valor;data\n;L01;p1;repasse;60,00;2026-11-02\n;L01;p2;repasse;39,80;2026-11-03\n0019;;p3;repasse;38,50;2026-11-03\n0021;;p4;repasse;12,00;2026-11-03"}
+  {side:"received",name:"repasses-exemplo.csv",text:"pedido;lote;evento;tipo;valor;data\n;L01;p1;repasse;60,00;2026-11-02\n;L01;p2;repasse;39,80;2026-11-03\n0019;;p3;repasse;38,50;2026-11-03\n0021;;p4;repasse;12,00;2026-11-03"},
+  {side:"bank",name:"depositos-exemplo.csv",text:"pedido;lote;evento;tipo;valor;data\n;L01;b1;deposito;60,00;2026-11-04\n;L01;b2;deposito;39,80;2026-11-04\n0019;;b3;deposito;38,00;2026-11-05"}
 ].map(s=>({...s,store:"Loja exemplo",platform:"Delivery",rate:"0"}));
 function stop() {
   version++;
@@ -51,7 +53,7 @@ function commit(list,result,history,isDemo) {
   options($("channel"),[...new Set(groups.map(g=>g.scope[1]).filter(Boolean))].sort(),"Todas");
   $("files").replaceChildren(...sources.map((s,index)=>{
     const row=element("p");
-    row.append(element("strong",s.name),element("span"," · "+(s.side==="expected"?"previsão":"recebimento")+(s.at?" · "+s.at:"")+(s.hash?" · SHA-256 "+s.hash.slice(0,12):"")));
+    row.append(element("strong",s.name),element("span"," · "+sideLabel(s.side)+(s.at?" · "+s.at:"")+(s.hash?" · SHA-256 "+s.hash.slice(0,12):"")));
     const button=element("button","Retirar arquivo");
     button.onclick=()=>{
       if(!confirm("Retirar "+s.name+" e recalcular o fechamento?"))return;
@@ -141,16 +143,55 @@ function paintSegments() {
 $("segment-back").onclick = () => {segmentPage--;paintSegments();};
 $("segment-next").onclick = () => {segmentPage++;paintSegments();};
 $("segment-csv").onclick = () => {
-  const heading = [$("segment-name").textContent,"Pedidos e lotes","Previsto comparável","Recebido comparável","Diferença líquida","Sem comparação"];
+  const heading = [$("segment-name").textContent,"Pedidos e lotes","Previsto comparável","Repasse declarado comparável","Diferença líquida","Sem comparação"];
   const lines = [heading,...segmentRows].map(row => row.map(Book.cell).join(";"));
   download("resumo-de-repasses.csv","\uFEFF"+lines.join("\r\n"),"text/csv;charset=utf-8");
 }
 $("segment-by").onchange = () => renderSegments(filter());
+
+function renderBank(list){
+  const panel=$("bank-panel"), hasBank=sources.some(s=>s.side==="bank");
+  panel.hidden=!hasBank;
+  if(!hasBank)return;
+  const totals=Book.bankTotals(list);
+  const moneyOrDash=n=>totals.compared?Book.money(n):"—";
+  $("bank-metrics").replaceChildren(...[
+    ["Repasse declarado comparável",moneyOrDash(totals.declared)],
+    ["Depósitos comparáveis",moneyOrDash(totals.bank)],
+    ["Depositado a menos",moneyOrDash(totals.short)],
+    ["Depositado a mais",moneyOrDash(totals.extra)]
+  ].map(([label,value])=>{
+    const card=element("div",label);
+    card.className="bank-metric";
+    card.append(element("strong",value));
+    return card;
+  }));
+  $("bank-count").textContent=totals.compared+" grupo(s) comparável(is) entre o arquivo de repasses e o CSV bancário; "+
+    totals.unpaired+" sem correspondência conclusiva. Valores informados pelo usuário, sem verificação de conta bancária.";
+  const current=list.slice((page-1)*50,page*50);
+  $("bank-results").replaceChildren(...current.map(g=>{
+    const tr=element("tr"),button=element("button",g.kind+" "+g.id);
+    button.type="button";
+    button.onclick=()=>{
+      selected=g.key;detail(g);
+      $("detail").scrollIntoView({block:"start"});
+      $("detail").querySelector("h2").focus();
+    };
+    const title=tr.insertCell();title.append(button);
+    const status=element("span",g.bankStatus);
+    status.className="badge "+(g.bankStatus==="Conferido"?"":"warn");
+    const reason=g.bankReason ? " · "+g.bankReason : "";
+    status.title=g.bankStatus+reason;
+    tr.insertCell().append(status);
+    cells(tr,[Book.money(g.received),Book.money(g.bank),Book.money(g.bankDifference)]);
+    return tr;
+  }));
+}
 function render() {
   const list=filter(),t=Book.totals(list);
   renderSegments(list);
   if(window.FechaInsights)window.FechaInsights.render(list);
-  $("metrics").replaceChildren(...[["Líquido previsto",t.expected],["Repasse recebido",t.received],["Recebido a menos",t.short],["Recebido a mais",t.extra]].map(([label,n])=>{
+  $("metrics").replaceChildren(...[["Líquido previsto",t.expected],["Repasse declarado",t.received],["Recebido a menos",t.short],["Recebido a mais",t.extra]].map(([label,n])=>{
     const box=element("div",label);box.className="metric";box.append(element("strong",comparableAmount(n,list.length,t)));return box;
   }));
   $("count").textContent=list.length+" grupo(s) na seleção · "+t.unpaired+" sem comparação conclusiva. Datas selecionam o grupo completo.";
@@ -159,6 +200,7 @@ function render() {
   if ($("from").value && $("to").value && $("from").value > $("to").value) $("count").textContent="A data inicial precisa ser anterior ou igual à final.";
   const pages=Math.max(1,Math.ceil(list.length/50));page=Math.max(1,Math.min(page,pages));
   $("pages").hidden=pages<=1;$("page").textContent=page+" / "+pages;$("prev").disabled=page===1;$("next").disabled=page===pages;
+  renderBank(list);
   $("results").replaceChildren(...list.slice((page-1)*50,page*50).map(g=>{
     const row=element("tr"),btn=element("button",g.kind+" "+g.id);
     btn.onclick=()=>{selected=g.key;detail(g);$("detail").scrollIntoView({block:"start"});$("detail").querySelector("h2").focus();};
@@ -171,13 +213,19 @@ function render() {
 function detail(g) {
   const box=$("detail");box.hidden=false;box.replaceChildren();
   const title=element("h2",g.kind+" "+g.id);title.tabIndex=-1;box.append(title);
-  box.append(element("p",[...g.scope,g.reason || "Diferença = recebido − líquido previsto."].filter(Boolean).join(" · ")));
+  box.append(element("p",[...g.scope,g.reason || "Diferença = repasse declarado − líquido previsto."].filter(Boolean).join(" · ")));
+  if(sources.some(s=>s.side==="bank")){
+    const bankSummary=g.bankDifference===null ? "Sem comparação bancária conclusiva" :
+      "Depósito informado "+Book.money(g.bank)+" · diferença frente ao repasse "+Book.money(g.bankDifference);
+    box.append(element("p","Conferência bancária · "+bankSummary+
+      (g.bankReason?" · "+g.bankReason:"")));
+  }
   const table=element("table");cells(table.createTHead().insertRow(),["Origem · linha","Data","Pedido / evento","Tipo","Valor","Comissão calculada"],"th");
   const body=table.createTBody();
   for(const e of g.entries)cells(body.insertRow(),[e.file+" · "+e.line,e.date||"—",[e.order,e.event].filter(Boolean).join(" / ")||"—",e.type,Book.money(e.value),e.fee?Book.money(-e.fee):"—"]);
   const wrap=element("div");wrap.className="scroll";wrap.tabIndex=0;wrap.append(table);box.append(wrap);
   for(const n of notes.filter(n=>n.key===g.key))box.append(element("p",n.at+" · "+n.text+(n.signature===signature(g)?"":" (versão anterior)")));
-  if(g.status!=="Conferido"){
+  if(g.status!=="Conferido" || g.bankStatus==="Divergente" || g.bankStatus==="Pendente"){
     const label=element("label","Motivo da revisão"),input=element("input"),btn=element("button","Registrar revisão");
     input.maxLength=500;label.append(input);box.append(label,btn);
     btn.onclick=()=>{const text=input.value.trim();if(!text){input.focus();return say("Informe o motivo da revisão.");}
@@ -188,7 +236,7 @@ function mapping(s) {
   const {headers,records}=Book.csv(s.text);
   s.map=Book.suggest(headers,s.side);
   const article=element("article"),grid=element("div"),sample=element("p");grid.className="grid";
-  article.append(element("h3",s.name),element("p",records.length+" registro(s) · "+(s.side==="expected"?"previsão":"recebimento")),grid,sample);
+  article.append(element("h3",s.name),element("p",records.length+" registro(s) · "+sideLabel(s.side)),grid,sample);
   const preview=()=>{sample.textContent="Primeira linha · "+Book.fields.filter(f=>s.map[f]>=0).map(f=>labels[f]+" = "+(records[0].values[s.map[f]]||"—")).join(" | ");};
   for(const f of Book.fields){
     const label=element("label",labels[f]),select=element("select");select.append(new Option("Ignorar","-1"),...headers.map((h,i)=>new Option(h,String(i))));
@@ -217,8 +265,8 @@ function mapping(s) {
 $("import").onsubmit=async event=>{
   event.preventDefault();const id=stop();
   try {
-    const files=[["orders","expected"],["payments","received"]].filter(([field])=>$(field).files.length);
-    if(!files.length)throw Error("Escolha pelo menos um arquivo de pedidos ou de repasses.");
+    const files=[["orders","expected"],["payments","received"],["bank","bank"]].filter(([field])=>$(field).files.length);
+    if(!files.length)throw Error("Escolha pelo menos um arquivo de previsão, repasses declarados ou depósitos bancários.");
     const rate=$("rate").value.trim()||"0",store=$("store").value.trim(),platform=$("platform").value.trim();
     const prepared=await Promise.all(files.map(async ([field,side])=>{
       const file=$(field).files[0],text=await read(file,4*1048576);
@@ -260,7 +308,7 @@ $("restore").onchange=async e=>{
     const data=JSON.parse(await read(file,40*1048576));
     if(data.version!==1||!Array.isArray(data.sources)||!data.sources.length||data.sources.length>50||!Array.isArray(data.notes)||data.notes.length>10000)throw Error("Formato de backup incompatível.");
     for(const s of data.sources){
-      if(!s||!["expected","received"].includes(s.side)||typeof s.text!=="string"||s.text.length>4*1048576||
+      if(!s||!["expected","received","bank"].includes(s.side)||typeof s.text!=="string"||s.text.length>4*1048576||
         !["name","store","platform","rate"].every(k=>typeof s[k]==="string")||s.map && !Book.fields.every(f=>Number.isInteger(s.map[f])))throw Error("Origem inválida no backup.");
       const hash=await digest(s.text);if(s.hash && s.hash!==hash)throw Error("O conteúdo de um arquivo foi alterado.");s.hash=hash;
     }
@@ -271,10 +319,10 @@ $("restore").onchange=async e=>{
   }catch(error){if(id===version)say(error.message);}finally{e.target.value="";}
 };
 function evidence(){
-  const table=[["Grupo","Loja","Plataforma","Situação","Motivo","Previsto grupo","Recebido grupo","Diferença grupo","Arquivo","Linha","Data do evento","Pedido","ID evento","Tipo","Valor do lançamento","Comissão calculada","Revisões"]];
+  const table=[["Grupo","Loja","Plataforma","Situação","Motivo","Previsto grupo","Recebido grupo","Diferença grupo","Arquivo","Linha","Data do evento","Pedido","ID evento","Tipo","Valor do lançamento","Comissão calculada","Revisões","Banco informado grupo","Diferença banco","Situação bancária"]];
   for(const g of filter()){
     const reviewedNotes=notes.filter(n=>n.key===g.key).map(n=>n.at+" "+n.text).join(" | ");
-    g.entries.forEach((e,i)=>table.push([g.kind+" "+g.id,...g.scope,g.status,g.reason,...[g.expected,g.received,g.difference].map(n=>i||n===null?"":Book.decimal(n)),e.file,e.line,e.date,e.order,e.event,e.type,Book.decimal(e.value),Book.decimal(-e.fee),i?"":reviewedNotes]));
+    g.entries.forEach((e,i)=>table.push([g.kind+" "+g.id,...g.scope,g.status,g.reason,...[g.expected,g.received,g.difference].map(n=>i||n===null?"":Book.decimal(n)),e.file,e.line,e.date,e.order,e.event,e.type,Book.decimal(e.value),Book.decimal(-e.fee),i?"":reviewedNotes,i||g.bank===null?"":Book.decimal(g.bank),i||g.bankDifference===null?"":Book.decimal(g.bankDifference),i?"":g.bankStatus]));
   }
   return table;
 }
@@ -289,8 +337,14 @@ $("print").onclick=()=>{
     ["Recebido a menos",amount(totals.short)],["Recebido a mais",amount(totals.extra)]]) {
     summary.append(element("dt",label),element("dd",String(value)));
   }
+  if(sources.some(s=>s.side==="bank")){
+    const bank=Book.bankTotals(selection);
+    summary.append(element("dt","Grupos comparáveis com CSV bancário"),element("dd",String(bank.compared)));
+    summary.append(element("dt","Depositado a menos no CSV"),element("dd",bank.compared?Book.money(bank.short):"—"));
+    summary.append(element("dt","Depositado a mais no CSV"),element("dd",bank.compared?Book.money(bank.extra):"—"));
+  }
   box.append(summary);
-  cells(table.createTHead().insertRow(),["Grupo","Loja","Plataforma","Situação","Previsto","Recebido","Diferença","Evidência"],"th");const body=table.createTBody();
-  for(const g of selection)cells(body.insertRow(),[g.kind+" "+g.id,...g.scope.map(value => value || "—"),[g.status,g.reason].filter(Boolean).join(" · "),Book.money(g.expected),Book.money(g.received),Book.money(g.difference),g.entries.map(e=>e.file+" L"+e.line).join(", ")]);
+  cells(table.createTHead().insertRow(),["Grupo","Loja","Plataforma","Situação","Previsto","Repasse declarado","Diferença","Evidência","Depósito no CSV","Diferença bancária"],"th");const body=table.createTBody();
+  for(const g of selection)cells(body.insertRow(),[g.kind+" "+g.id,...g.scope.map(value => value || "—"),[g.status,g.reason].filter(Boolean).join(" · "),Book.money(g.expected),Book.money(g.received),Book.money(g.difference),g.entries.map(e=>e.file+" L"+e.line).join(", "),Book.money(g.bank),Book.money(g.bankDifference)]);
   box.append(table);window.print();
 };

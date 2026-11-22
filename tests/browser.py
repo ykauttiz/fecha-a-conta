@@ -58,6 +58,8 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))
         page.goto(f"http://127.0.0.1:{server.server_port}/")
+        assert page.evaluate("!!document.querySelector('link[rel~=icon]')"), "falta o ícone da página"
+        assert page.evaluate("(document.querySelector('meta[name=description]')?.content || '').length >= 50"), "falta a descrição da página"
         theme = page.get_by_role("combobox", name="Tema da interface")
         for mode in ("dark", "light"):
             theme.select_option(mode)
@@ -78,9 +80,18 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         assert page.evaluate("location.hash === document.querySelector('.skip').hash")
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         page.locator("#demo").click()
+        assert not errors, errors
         expect(page.locator("#metrics")).to_contain_text("R$ 1,50")
+        expect(page.locator("#bank-panel")).to_be_visible()
+        expect(page.locator("#bank-panel")).to_contain_text("R$ 0,50")
+        assert page.locator("#bank-results tr").count() >= 2
         expect(page.locator("#insights-cards")).to_contain_text("Grupos na seleção")
         expect(page.locator("#insights-status")).to_have_attribute("role", "img")
+        # Rótulos de datas não devem se sobrepor nos layouts testados.
+        labels = page.locator("#insights-events .insight-spark-date")
+        boxes = [labels.nth(i).bounding_box() for i in range(labels.count())]
+        assert all(x["x"] + x["width"] <= y["x"] + 1 for x,y in zip(boxes, boxes[1:])), (width, boxes)
+
         with page.expect_download() as insights_file:
             page.locator("#insights-export").click()
         assert "Situação" in Path(insights_file.value.path()).read_text(encoding="utf-8-sig")
@@ -145,6 +156,7 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         expect(page.locator("#message")).to_contain_text("Mapeamento aplicado")
         page.locator("#confirm").click()
         expect(page.locator("#origin")).to_have_text("2 arquivo(s) nesta sessão")
+        expect(page.locator("#bank-panel")).to_be_hidden()
         page.get_by_text("Preparar prévia", exact=True).click()
         page.locator("#confirm").click()
         expect(page.locator("#message")).to_contain_text("já estão")
@@ -177,6 +189,25 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         page.locator("#confirm").click()
         expect(page.locator("#message")).to_contain_text("linha 2")
         expect(page.locator("#results")).to_contain_text("Lote L01")
+
+        page.locator("#reset-filters").click()
+        page.locator("#orders").set_input_files([])
+        page.locator("#payments").set_input_files([])
+        page.locator("#bank").set_input_files({"name":"depositos-lote.csv","mimeType":"text/csv",
+            "buffer":b"pedido;lote;evento;valor\n;L01;b01;60,00\n;L01;b02;39,80\n0019;;b03;38,00"})
+        page.get_by_text("Preparar prévia", exact=True).click()
+        page.locator("#confirm").click()
+        expect(page.locator("#bank-panel")).to_be_visible()
+        expect(page.locator("#bank-panel")).to_contain_text("R$ 0,50")
+        with page.expect_download() as bank_backup:
+            page.locator("#save").click()
+        bank_file = Path(tmp, "com-banco.json")
+        bank_backup.value.save_as(bank_file)
+        page.reload()
+        page.get_by_text("Restaurar um fechamento", exact=True).click()
+        page.locator("#restore").set_input_files(bank_file)
+        expect(page.locator("#bank-panel")).to_be_visible()
+        expect(page.locator("#bank-panel")).to_contain_text("R$ 0,50")
         assert not errors, errors
         page.close()
     browser.close()

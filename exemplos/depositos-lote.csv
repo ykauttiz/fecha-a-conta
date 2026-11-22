@@ -1,0 +1,4 @@
+pedido;lote;evento;tipo;valor;data
+;L01;b01;deposito;60,00;2026-11-04
+;L01;b02;deposito;39,80;2026-11-04
+0019;;b03;deposito;38,00;2026-11-05
