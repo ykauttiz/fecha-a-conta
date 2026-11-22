@@ -504,3 +504,37 @@ footer{margin-top:2.7rem;padding:1.8rem 0;color:var(--app-muted)}
 :root[data-theme="dark"] .insight-filter{background:var(--app-soft);color:var(--app-ink);border-color:var(--app-border)}
 
 @media(max-width:370px){.hero h1{font-size:clamp(2.25rem,10vw,2.65rem)}}
+
+/* Refinamento móvel: cabeçalho compacto e navegação em trilho horizontal. */
+@media(max-width:670px){
+  header{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center;
+    row-gap:.65rem;
+    padding:1rem 0;
+  }
+  header .brand{
+    grid-column:1/-1;
+    font-size:1.23rem;
+    min-width:0;
+  }
+  header .brand i{width:38px;height:38px;border-radius:12px}
+  header>a:not(.brand){grid-column:1;justify-self:start;padding:.55rem .7rem;font-size:.79rem}
+  header .appearance{grid-column:2;justify-self:end;font-size:.8rem}
+  header .appearance select{padding:.4rem .5rem;min-height:40px}
+  .project-nav{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    max-width:100%;
+    scrollbar-width:thin;
+    gap:.2rem;
+  }
+  .project-nav a{
+    flex:0 0 auto;
+    min-height:40px;
+    white-space:nowrap;
+    font-size:.81rem;
+    padding:.35rem .7rem;
+  }
+}

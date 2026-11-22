@@ -96,7 +96,8 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         if os.environ.get("CAPTURAR_DEMO") == "1":
             captures = root / "capturas"
             captures.mkdir(exist_ok=True)
-            page.screenshot(path=captures / f"demo-{width}.png", animations="disabled")
+            page.evaluate("scrollTo(0, 0)")
+            page.screenshot(path=captures / f"demo-{width}.png", animations="disabled", full_page=True)
 
         expect(page.locator("#segments")).to_contain_text("Delivery")
         page.locator("#segment-by").select_option("shop")

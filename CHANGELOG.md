@@ -2,6 +2,8 @@
 
 ## 22 de novembro de 2026 · Interface premium e insights da conciliação
 
+- Cabeçalho mobile compacto e navegação horizontal; CI agora captura a página inteira para revisão visual.
+
 - Nova identidade visual para dashboard, cabeçalho, importação, tabelas, botões e temas, com animações e layouts responsivos.
 - Painel de insights de sessão: distribuição de situações, contagem por data de evento e encargos tipificados, atualizados a cada filtro.
 - Analytics somente-leitura, sem mudança de cálculos ou dos dados persistidos, com testes de unidade e estados vazios.
