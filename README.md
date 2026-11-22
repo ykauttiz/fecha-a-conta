@@ -28,7 +28,7 @@ A interface agora possui **central de comandos** acessível pelo botão do cabe�
 
 Os **filtros rápidos** permitem isolar divergentes, pendentes ou conferidos. Uma faixa de **próxima ação** indica a maior diferença absoluta entre os grupos filtrados, sem insinuar fraude ou cobrança indevida. O formulário acompanha as etapas de importação, validação de colunas e investigação.
 
-As animações da interface foram ampliadas com transições progressivas, realces e feedbacks sem dependências externas. Movimento reduzido continua respeitado, e os atalhos não interferem na digitação em campos.
+A camada adicional de navegação e animações fica em `experience.js` e `experience.css`, isolada do motor financeiro e dos estilos-base. As animações foram ampliadas com transições progressivas, realces e feedbacks sem dependências externas. Movimento reduzido continua respeitado, e os atalhos não interferem na digitação em campos.
 
 ## Aparência e navegação
 
