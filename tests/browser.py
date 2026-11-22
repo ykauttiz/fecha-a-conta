@@ -81,11 +81,11 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         expect(page.locator("#metrics")).to_contain_text("R$ 1,50")
         for mode in ("dark", "light"):
             theme.select_option(mode)
-            page.evaluate("document.querySelectorAll('details').forEach(d => d.open = true)")
+            page.evaluate("document.querySelectorAll('details:not([open])').forEach(d => { d.open = true; d.dataset.scan = '1' })")
             page.evaluate("document.querySelector('.skip').focus()")
             page.wait_for_timeout(300)
             assert not page.evaluate(CONTRAST_SCAN), (mode, width, page.evaluate(CONTRAST_SCAN))
-            page.evaluate("document.activeElement.blur()")
+            page.evaluate("document.activeElement.blur(); document.querySelectorAll('details[data-scan]').forEach(d => { d.open = false; delete d.dataset.scan })")
         theme.select_option("system")
         if os.environ.get("CAPTURAR_DEMO") == "1":
             captures = root / "capturas"
