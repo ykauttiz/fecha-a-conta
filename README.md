@@ -14,6 +14,8 @@ As exportações destinadas a planilhas tratam prefixos de fórmula ASCII, carac
 
 ## Painel de análise e interface
 
+O painel também permite baixar um CSV dos indicadores e das contagens, sem exportar dados bancários nem reinterpretar os cálculos. O arquivo registra encargos em **centavos**, com indicação explícita de que não são cobranças indevidas.
+
 O painel apresenta gráficos de situação, distribuição dos grupos e contagem de lançamentos por data de evento, todos calculados a partir da **seleção filtrada**. A seção de encargos exibe valores explicitamente tipificados nos registros de previsão, sem afirmar que constituem cobranças indevidas. Datas não significam previsão de depósitos. Sem dados, os componentes exibem estados vazios em vez de números fictícios.
 
 O design recebeu uma camada visual tecnológica, com superfícies premium, novas hierarquias, efeitos suaves de entrada, microinterações, temas refinados e layout específico para telas menores. Animações respeitam movimento reduzido.

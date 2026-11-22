@@ -79,6 +79,12 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         page.locator("#demo").click()
         expect(page.locator("#metrics")).to_contain_text("R$ 1,50")
+        expect(page.locator("#insights-cards")).to_contain_text("Grupos na seleção")
+        expect(page.locator("#insights-status")).to_have_attribute("role", "img")
+        with page.expect_download() as insights_file:
+            page.locator("#insights-export").click()
+        assert "Situação" in Path(insights_file.value.path()).read_text(encoding="utf-8-sig")
+
         for mode in ("dark", "light"):
             theme.select_option(mode)
             page.evaluate("document.querySelectorAll('details').forEach(d => d.open = true)")

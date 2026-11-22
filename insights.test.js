@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const {analyze} = require("./insights");
+const {analyze,csvReport} = require("./insights");
 const entry=(type,value,date,side="expected",fee=0n)=>({type,value,date,side,fee});
 test("insights contam grupos, datas e encargos presentes sem estimar repasses",()=>{
   const data=analyze([
@@ -25,4 +25,13 @@ test("insights vazios ou sem data não fabricam valores",()=>{
   assert.equal(noDate.counts.pendente,1);
   assert.equal(noDate.dates.length,0);
   assert.equal(noDate.charges.comissao,0n);
+});
+
+test("relatório de insights é CSV consistente, com datas e valores em centavos",()=>{
+  const data=analyze([{status:"Divergente",entries:[entry("comissao",-120n,"2026-11-01")]}]);
+  const csv=csvReport(data);
+  assert.match(csv,/Encargos";"Comissões";"120"/);
+  assert.match(csv,/Eventos";"2026-11-01";"1"/);
+  assert.match(csv,/Situação";"Divergentes";"1"/);
+  assert.equal(csv.charCodeAt(0),0xFEFF);
 });

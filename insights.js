@@ -29,6 +29,23 @@
     }
     return {counts,charges,dates:[...dates].sort(([a],[b])=>a.localeCompare(b)),count:groups.length};
   }
+  function csvReport(data){
+    const rows=[
+      ["Seção","Indicador","Valor","Observação"],
+      ["Situação","Grupos na seleção",data.count,"Filtros ativos na geração"],
+      ["Situação","Conferidos",data.counts.conferido,"Diferença igual a zero"],
+      ["Situação","Divergentes",data.counts.divergente,"Diferença exige investigação"],
+      ["Situação","Sem comparação",data.counts.pendente,"Pendências ou informações ambíguas"]
+    ];
+    for(const [key,label] of financialTypes)rows.push(["Encargos",label,String(data.charges[key]),"Valor em centavos dos lançamentos tipificados"]);
+    for(const [date,count] of data.dates)rows.push(["Eventos",date,count,"Quantidade de lançamentos, não depósitos"]);
+    const cell=value=>{
+      let text=String(value ?? "");
+      if(/^[\s]*[=+@]/.test(text))text="'"+text;
+      return '"'+text.replaceAll('"','""')+'"';
+    };
+    return "\uFEFF"+rows.map(row=>row.map(cell).join(";")).join("\r\n");
+  }
   function node(tag,text,cls){
     const el=document.createElement(tag);
     if(text!==undefined&&text!==null) el.textContent=String(text);
@@ -100,7 +117,17 @@
     }
     const context=document.getElementById("insights-context");
     if(context)context.textContent=data.count+" grupo(s) nos filtros atuais";
+    const exportButton=document.getElementById("insights-export");
+    if(exportButton){
+      exportButton.disabled=!data.count;
+      exportButton.onclick=()=>{
+        const blob=new Blob([csvReport(data)],{type:"text/csv;charset=utf-8"});
+        const url=URL.createObjectURL(blob),a=document.createElement("a");
+        a.href=url;a.download="resumo-fecha-a-conta.csv";a.click();
+        setTimeout(()=>URL.revokeObjectURL(url),1000);
+      };
+    }
   }
-  if(typeof module!=="undefined"&&module.exports)module.exports={analyze};
-  if(root)root.FechaInsights={analyze,render};
+  if(typeof module!=="undefined"&&module.exports)module.exports={analyze,csvReport};
+  if(root)root.FechaInsights={analyze,csvReport,render};
 })(typeof window!=="undefined"?window:null);
