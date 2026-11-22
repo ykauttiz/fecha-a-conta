@@ -35,3 +35,7 @@ Ao editar `style.css`, atualize o parâmetro `?v=` em `index.html` com os 12 pri
 ## Estilo e acessibilidade
 
 O `.editorconfig` define codificação, quebras de linha e indentação. Em mudanças de interface, confira navegação por teclado, foco visível, contraste nos temas claro e escuro, telas de 320 px e `prefers-reduced-motion`.
+
+## Camada de experiência
+
+`style.css` contém a base da interface; `experience.css` contém a navegação aprimorada, os componentes de investigação e o motion design. Ao editar a segunda folha de estilos, atualize o parâmetro `?v=` da referência correspondente em `index.html`. A interface dinâmica usa `experience.js` e a API somente de interface exposta por `app.js`; o motor monetário permanece em `book.js`.
