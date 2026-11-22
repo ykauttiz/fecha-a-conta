@@ -10,6 +10,7 @@ test("insights contam grupos, datas e encargos presentes sem estimar repasses",(
   ]);
   assert.deepEqual(data.counts,{conferido:1,divergente:1,pendente:1});
   assert.equal(data.count,3);
+  assert.deepEqual(data.reasons,[["Sem justificativa disponível",1]]);
   assert.equal(data.charges.comissao,1450n);
   assert.equal(data.charges.desconto_loja,300n);
   assert.equal(data.charges.estorno,99n);

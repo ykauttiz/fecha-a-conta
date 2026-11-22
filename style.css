@@ -499,3 +499,6 @@ footer{margin-top:2.7rem;padding:1.8rem 0;color:var(--app-muted)}
  #printout{display:block!important}
  body>*{display:none!important}
 }
+
+.insight-filter{margin-top:1rem;width:100%;background:var(--app-soft);color:var(--app-ink);border-color:var(--app-border);font-weight:740}
+:root[data-theme="dark"] .insight-filter{background:var(--app-soft);color:var(--app-ink);border-color:var(--app-border)}

@@ -11,10 +11,15 @@
     const counts={conferido:0,divergente:0,pendente:0};
     const charges=Object.fromEntries(financialTypes.map(([key])=>[key,0n]));
     const dates=new Map();
+    const reasons=new Map();
     for(const group of groups){
       if(group.status==="Conferido") counts.conferido++;
       else if(group.status==="Divergente") counts.divergente++;
-      else counts.pendente++;
+      else {
+        counts.pendente++;
+        const reason=group.reason||"Sem justificativa disponível";
+        reasons.set(reason,(reasons.get(reason)||0)+1);
+      }
       for(const entry of group.entries){
         if(entry.date) dates.set(entry.date,(dates.get(entry.date)||0)+1);
         if(entry.side!=="expected") continue;
@@ -27,7 +32,7 @@
         }
       }
     }
-    return {counts,charges,dates:[...dates].sort(([a],[b])=>a.localeCompare(b)),count:groups.length};
+    return {counts,charges,dates:[...dates].sort(([a],[b])=>a.localeCompare(b)),reasons:[...reasons].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],"pt-BR")),count:groups.length};
   }
   function csvReport(data){
     const rows=[
@@ -58,6 +63,7 @@
     const status=document.getElementById("insights-status");
     const events=document.getElementById("insights-events");
     const fees=document.getElementById("insights-fees");
+    const reasonsBox=document.getElementById("insights-reasons");
     if(!cards||!status||!events||!fees)return;
     const data=analyze(groups);
     const rows=[
@@ -114,6 +120,26 @@
       const item=node("div",null,"insight-charge");
       item.append(node("span",label),node("strong",typeof Book!=="undefined"?Book.money(data.charges[key]):String(data.charges[key])));
       fees.append(item);
+    }
+    if(reasonsBox){
+      reasonsBox.replaceChildren();
+      if(!data.reasons.length)reasonsBox.append(node("p","Nenhuma pendência nos grupos selecionados.","insight-empty"));
+      else for(const [reason,count] of data.reasons.slice(0,5)){
+        const item=node("div",null,"insight-charge");
+        item.append(node("span",reason),node("strong",count));
+        reasonsBox.append(item);
+      }
+    }
+    const pendingButton=document.getElementById("insights-filter-pending");
+    if(pendingButton){
+      pendingButton.disabled=!data.counts.pendente;
+      pendingButton.onclick=()=>{
+        const select=document.getElementById("status");
+        if(!select)return;
+        select.value="Pendente";
+        select.dispatchEvent(new Event("input",{bubbles:true}));
+        document.getElementById("results")?.scrollIntoView({block:"start",behavior:"auto"});
+      };
     }
     const context=document.getElementById("insights-context");
     if(context)context.textContent=data.count+" grupo(s) nos filtros atuais";
