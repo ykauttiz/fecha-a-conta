@@ -1,5 +1,6 @@
 """Exercise the page without sending an extrato to an external service."""
 import os
+import json
 import shutil
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -198,6 +199,7 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         expect(page.locator("#origin")).to_have_text("2 arquivo(s) nesta sessão")
         expect(page.locator("#workflow-steps [aria-current=step]")).to_contain_text("Investigar")
         expect(page.locator("#bank-panel")).to_be_hidden()
+        expect(page.locator("#bank-filter-label")).to_be_hidden()
         page.get_by_text("Preparar prévia", exact=True).click()
         page.locator("#confirm").click()
         expect(page.locator("#message")).to_contain_text("já estão")
@@ -235,11 +237,18 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         page.locator("#orders").set_input_files([])
         page.locator("#payments").set_input_files([])
         page.locator("#bank").set_input_files({"name":"depositos-lote.csv","mimeType":"text/csv",
-            "buffer":b"pedido;lote;evento;valor\n;L01;b01;60,00\n;L01;b02;39,80\n0019;;b03;38,00"})
+            "buffer":b"pedido;lote;evento;valor\n;L01;b01;60,00\n;L01;b02;39,70\n0019;;b03;38,00"})
         page.get_by_text("Preparar prévia", exact=True).click()
         page.locator("#confirm").click()
         expect(page.locator("#bank-panel")).to_be_visible()
+        expect(page.locator("#bank-filter-label")).to_be_visible()
         expect(page.locator("#bank-panel")).to_contain_text("R$ 0,50")
+        # Mesmo com plataforma conferida, diferença bancária aparece como prioridade.
+        page.locator("#status").select_option("Conferido")
+        expect(page.locator("#attention-panel")).to_contain_text("depósito informado no banco")
+        page.locator("#bank-status").select_option("Divergente")
+        expect(page.locator("#results")).to_contain_text("Lote L01")
+        page.locator("#reset-filters").click()
         with page.expect_download() as bank_backup:
             page.locator("#save").click()
         bank_file = Path(tmp, "com-banco.json")
@@ -249,6 +258,16 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         page.locator("#restore").set_input_files(bank_file)
         expect(page.locator("#bank-panel")).to_be_visible()
         expect(page.locator("#bank-panel")).to_contain_text("R$ 0,50")
+        # Histórico adulterado falha sem substituir os arquivos já restaurados.
+        altered = json.loads(bank_file.read_text(encoding="utf-8"))
+        altered["notes"] = [{
+            "at":"2026-11-22T00:00:00.000Z","key":"teste","signature":"teste","text":"x"*501
+        }]
+        invalid = Path(tmp, "backup-invalido.json")
+        invalid.write_text(json.dumps(altered), encoding="utf-8")
+        page.locator("#restore").set_input_files(invalid)
+        expect(page.locator("#message")).to_contain_text("Histórico de revisão inválido")
+        expect(page.locator("#bank-panel")).to_be_visible()
         assert not errors, errors
         # Movimento reduzido não depende de animação de entrada.
         page.emulate_media(reduced_motion="reduce")
