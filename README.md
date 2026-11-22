@@ -60,7 +60,7 @@ Os modelos simples [pedidos.csv](pedidos.csv) e [repasses.csv](repasses.csv) con
 
 ## iFood e 99Food
 
-O iFood descreve um relatório mensal atualizado por eventos. A 99Food documenta pagamentos divididos. Ambos os casos motivam o uso de lotes, datas de eventos e importação incremental. A importação disponível é por mapeamento de CSV. A escolha da plataforma identifica a origem. Para homologar um layout específico, ainda são necessárias amostras autorizadas e anonimizadas com totais conhecidos. Não há conexão com contas ou API das plataformas.
+O iFood descreve um relatório mensal atualizado por eventos. A 99Food documenta pagamentos divididos. Ambos os casos motivam o uso de lotes, datas de eventos e importação incremental. A importação disponível é por mapeamento de CSV. A escolha da plataforma identifica a origem. Para homologar um layout específico, ainda são necessárias amostras autorizadas e anonimizadas com totais conhecidos. Não há conexão com contas ou API das plataformas. Os valores do lado **recebido** são informados nos arquivos importados; o sistema não verifica depósitos bancários automaticamente.
 
 [Relatório de conciliação do iFood](https://blog-parceiros.ifood.com.br/relatorio-de-conciliacao/) · [Pagamento dividido da 99Food](https://99app.com/99food/restaurantes/guias/como-acompanhar-seus-repasses-e-entender-o-novo-pagamento-dividido/)
 
@@ -70,7 +70,7 @@ Abra index.html para uso offline ou rode `python -m http.server 8000` para servi
 
 - `book.js` lê CSV, valida lançamentos, agrupa por origem e calcula as diferenças. `worker.js` executa esse motor fora da interface.
 - `app.js` gerencia importações, seleção, histórico e exportação. `core.js` mantém a API JavaScript anterior para consumidores do comparador simples.
-- `node --test` executa os testes do motor e da análise,, incluindo 10 mil pedidos. A integração contínua testa o navegador em 375 e 1280 px, além do fluxo de backup e restauração.
+- `node --test` executa os testes do motor e da análise, incluindo 10 mil pedidos. A integração contínua testa o navegador em 375 e 1280 px, além do fluxo de backup e restauração.
 
 Filtre por tipo de lançamento, sentido da diferença e valor mínimo em reais. O filtro por tipo seleciona o grupo completo: ao procurar comissão, você continua vendo os depósitos e o previsto daquele lote. Os limites em centavos são inclusivos e valem também para os totais, a impressão e o CSV.
 
