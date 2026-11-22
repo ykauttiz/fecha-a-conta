@@ -1,4 +1,12 @@
-NaN
+# Changelog
+
+## 22 de novembro de 2026 · Auditoria de integridade e segurança
+
+- Isolamento de inconsistências por origem: problemas somente bancários deixam a conferência da plataforma intacta, e vice-versa.
+- Identificadores repetidos nos repasses declarados bloqueiam ambos os níveis para evitar conclusões incorretas.
+- Mapeamento conservador de colunas equivalentes normalizadas e melhoria na neutralização de fórmulas CSV Unicode.
+- Testes de regressão para os três cenários de conflito e proteção das exportações.
+- Correção de título inválido no changelog.
 
 ## 22 de novembro de 2026 · Conciliação em três níveis
 

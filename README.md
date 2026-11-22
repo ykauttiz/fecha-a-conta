@@ -66,6 +66,12 @@ Os modelos simples [pedidos.csv](pedidos.csv) e [repasses.csv](repasses.csv) con
 - O mesmo arquivo, lado, loja e plataforma é ignorado por SHA-256 do texto decodificado. Retire o arquivo antes de trocar seu mapeamento. Reexportações com ID e conteúdo financeiro idênticos contam uma vez. IDs em conflito, duplicatas ambíguas e mistura de líquido com componentes ficam pendentes. Sem ID de evento, use uma linha por lado por grupo.
 - O filtro de data seleciona o grupo se **qualquer evento** estiver no período e mantém o grupo completo. Valores sem par e grupos ambíguos ficam fora dos totais comparáveis. Uma revisão humana anota a investigação e preserva a diferença calculada.
 
+## Garantias de isolamento e importação
+
+Conflitos de identificadores são analisados **por origem**. Um evento duplicado somente no CSV bancário não apaga uma comparação correta entre previsão e repasse declarado; um conflito na previsão não invalida a comparação independente entre repasse e depósito informado. Já um conflito no repasse declarado torna ambas as comparações inconclusivas.
+
+Cabeçalhos canônicos normalizados duplicados, como `Pedido` e `pedido`, precisam ser mapeados manualmente.
+
 ## Terceiro nível: plataforma × banco (CSV opcional)
 
 O relatório da plataforma e o extrato do banco são **fontes diferentes**. O campo "Repasses declarados" representa o que o arquivo importado informa; ele não confirma dinheiro creditado na conta. Para comparar com os depósitos, importe um CSV separado de banco na terceira entrada. O sistema soma depósitos por identificador de pedido ou lote, loja e plataforma, aceita depósitos divididos com IDs de evento exclusivos e informa diferenças em centavos.
