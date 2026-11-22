@@ -191,7 +191,7 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         expect(page.locator("#message")).to_contain_text("já estão")
         page.locator("#cancel").click()
         page.locator("#status").select_option("Divergente")
-        page.get_by_role("button", name="Pedido 0019").click()
+        page.locator("#results").get_by_role("button", name="Pedido 0019", exact=True).click()
         page.get_by_label("Motivo da revisão").fill("Aguardando o extrato seguinte")
         page.get_by_text("Registrar revisão", exact=True).click()
         expect(page.locator("#results")).to_contain_text("revisado")
