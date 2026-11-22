@@ -87,6 +87,11 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         assert page.locator("#bank-results tr").count() >= 2
         expect(page.locator("#insights-cards")).to_contain_text("Grupos na seleção")
         expect(page.locator("#insights-status")).to_have_attribute("role", "img")
+        # Rótulos de datas não devem se sobrepor nos layouts testados.
+        labels = page.locator("#insights-events .insight-spark-date")
+        boxes = [labels.nth(i).bounding_box() for i in range(labels.count())]
+        assert all(x["x"] + x["width"] <= y["x"] + 1 for x,y in zip(boxes, boxes[1:])), (width, boxes)
+
         with page.expect_download() as insights_file:
             page.locator("#insights-export").click()
         assert "Situação" in Path(insights_file.value.path()).read_text(encoding="utf-8-sig")

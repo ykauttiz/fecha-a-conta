@@ -581,3 +581,10 @@ footer{margin-top:2.7rem;padding:1.8rem 0;color:var(--app-muted)}
 @media(max-width:950px){.bank-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:430px){.bank-metrics{grid-template-columns:1fr 1fr;gap:.6rem}.bank-metric{padding:.8rem}.bank-metric strong{font-size:1.18rem}}
 @media(prefers-reduced-motion:no-preference){.bank-metric{animation:premium-enter .45s both}.bank-metric:nth-child(2){animation-delay:.055s}.bank-metric:nth-child(3){animation-delay:.11s}.bank-metric:nth-child(4){animation-delay:.16s}}
+
+/* Datas compactas do gráfico de eventos em telas estreitas. */
+@media(max-width:670px){
+  .insight-spark{gap:0}
+  .insight-spark-date{font-size:.56rem;letter-spacing:-.045em;white-space:nowrap}
+  .insight-spark-col{min-width:0}
+}
