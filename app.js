@@ -217,7 +217,15 @@ function render() {
     btn.onclick=()=>{selected=g.key;detail(g);$("detail").scrollIntoView({block:"start"});$("detail").querySelector("h2").focus();};
     row.insertCell().append(btn);
     const badge=element("span",g.status+(reviewed(g)?" · revisado":""));badge.className="badge "+(g.status==="Conferido"?"":"warn");
-    row.insertCell().append(badge);cells(row,[g.expected,g.received,g.difference].map(Book.money));return row;
+    const stateCell=row.insertCell();stateCell.append(badge);
+    if(sources.some(s=>s.side==="bank")){
+      const bankBadge=element("small","Banco: "+g.bankStatus);
+      bankBadge.className="bank-status-inline";
+      bankBadge.dataset.state=g.bankStatus==="Divergente"?"alert":g.bankStatus==="Pendente"?"pending":"clear";
+      bankBadge.title=g.bankReason||"Comparação de repasse declarado e depósito informado";
+      stateCell.append(bankBadge);
+    }
+    cells(row,[g.expected,g.received,g.difference].map(Book.money));return row;
   }));
   const current=list.find(g=>g.key===selected);$("detail").hidden=!current;if(current)detail(current);
   window.dispatchEvent(new Event("fecha:render"));

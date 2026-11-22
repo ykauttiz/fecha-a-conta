@@ -68,7 +68,7 @@ Os modelos simples [pedidos.csv](pedidos.csv) e [repasses.csv](repasses.csv) con
 
 ## Revisão da experiência e dos backups
 
-O destaque de próxima ação diferencia divergências do **repasse declarado** e do **CSV bancário**, sem declarar uma seleção conferida quando existe alguma pendência bancária. Há um filtro adicional por situação bancária e um comando específico para investigá-la. Nenhum desses indicadores equivale à confirmação automática de um depósito.
+O resultado de cada pedido ou lote agora exibe também o **estado bancário em um selo separado** quando foi fornecido um CSV bancário, evitando que a palavra “Conferido” na plataforma seja interpretada como confirmação de depósito. O destaque de próxima ação diferencia divergências do **repasse declarado** e do **CSV bancário**, sem declarar uma seleção conferida quando existe alguma pendência bancária. Há um filtro adicional por situação bancária e um comando específico para investigá-la. Nenhum desses indicadores equivale à confirmação automática de um depósito.
 
 A restauração também valida o tamanho e a estrutura das observações, impedindo a inclusão de registros de revisão malformados sem substituir a sessão atual.
 
