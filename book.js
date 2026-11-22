@@ -165,7 +165,7 @@ const Book = (() => {
         declaredAmbiguous?"Múltiplos repasses sem identificadores individuais":
         !b.length?"Sem repasse declarado para comparar":
         !c.length?"Sem depósito associado no CSV bancário":"";
-      const bankDifference=bankReason?null:bank-received;
+      const bankDifference=!hasBankSource||bankReason?null:bank-received;
       const bankStatus=!hasBankSource?"Não analisado":bankReason?"Pendente":bankDifference===0n?"Conferido":"Divergente";
       return {...g,expected:a.length?expected:null,received:b.length?received:null,difference,reason,
         bank:c.length?bank:null,bankDifference,bankReason,bankStatus,
