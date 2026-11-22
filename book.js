@@ -3,7 +3,7 @@
 // Decimal text stays exact from import through display and export.
 const Book = (() => {
   const costs = ["comissao","tarifa","desconto_loja","estorno"];
-  const types = ["venda","subsidio","ajuste","liquido",...costs,"repasse"];
+  const types = ["venda","subsidio","ajuste","liquido",...costs,"repasse","deposito"];
   const fields = ["pedido","lote","valor","evento","tipo","data","loja","plataforma"];
   function cents(raw) {
     const match = /^(-?)(\d{1,18})(?:[,.](\d{1,2}))?$/.exec(raw);
@@ -65,7 +65,7 @@ const Book = (() => {
     const aliases={
       pedido:["id_pedido","pedido_id","numero_pedido","numero_do_pedido","order_id","n_pedido"],
       lote:["id_lote","lote_id","numero_lote"],
-      valor:["valor_liquido","valor_liquido_previsto","valor_repassado","montante"],
+      valor:["valor_liquido","valor_liquido_previsto","valor_repassado","montante","valor_depositado","valor_do_deposito","depositado"],
       evento:["id_evento","evento_id","identificador_de_evento","transaction_id"],
       tipo:["tipo_evento","tipo_lancamento","tipo_de_lancamento"],
       data:["data_evento","data_do_evento","date"],
@@ -75,7 +75,7 @@ const Book = (() => {
     const chosen=new Set();
     return Object.fromEntries(fields.map(field=>{
       let index=names.indexOf(field);
-      if(index<0&&field==="valor")index=names.indexOf(side==="expected"?"previsto":"recebido");
+      if(index<0&&field==="valor")index=names.indexOf(side==="expected"?"previsto":side==="bank"?"depositado":"recebido");
       if(index<0){
         const candidates=names.flatMap((name,i)=>(aliases[field]||[]).includes(name)?[i]:[]);
         index=candidates.length===1?candidates[0]:-1;
@@ -91,6 +91,7 @@ const Book = (() => {
     return Number.isFinite(+d) && d.toISOString().slice(0,10) === date;
   }
   function parseSource(source) {
+    if (!["expected","received","bank"].includes(source.side)) throw Error("Origem financeira desconhecida.");
     const {headers,records} = csv(source.text);
     const map = source.map || suggest(headers,source.side);
     const indices = fields.map(f=>map[f] ?? -1);
@@ -102,10 +103,12 @@ const Book = (() => {
       const get = field => values[map[field]] || "";
       try {
         const order=get("pedido"), batch=get("lote"), event=get("evento"), date=get("data");
-        const type=get("tipo").toLowerCase() || (source.side === "expected" ? "liquido" : "repasse");
+        const type=get("tipo").toLowerCase() || (source.side === "expected" ? "liquido" : source.side === "bank" ? "deposito" : "repasse");
         if (!order && !batch) throw Error("pedido ou lote ausente.");
         if (date && !validDate(date)) throw Error("data inválida. Use AAAA-MM-DD.");
-        if (!types.includes(type) || (source.side === "received") !== (type === "repasse"))
+        const validType = source.side === "expected" ? type !== "repasse" && type !== "deposito" :
+          source.side === "received" ? type === "repasse" : type === "deposito";
+        if (!types.includes(type) || !validType)
           throw Error("tipo incompatível com a origem: " + type);
         let value=cents(get("valor"));
         if (costs.includes(type)) value = value > 0n ? -value : value;
@@ -120,6 +123,7 @@ const Book = (() => {
   }
   function reconcile(sources) {
     const groups = new Map(), seenFiles=new Set(), byEvent=new Map();
+    const hasBankSource=sources.some(source=>source.side==="bank");
     for (const source of sources) {
       const identity=JSON.stringify([source.side,source.store,source.platform,source.hash]);
       if (source.hash && seenFiles.has(identity)) continue;
@@ -146,14 +150,25 @@ const Book = (() => {
       }
     }
     return [...groups.values()].filter(g=>g.entries.length).map(g=>{
-      const a=g.entries.filter(e=>e.side==="expected"), b=g.entries.filter(e=>e.side==="received");
+      const a=g.entries.filter(e=>e.side==="expected"), b=g.entries.filter(e=>e.side==="received"), c=g.entries.filter(e=>e.side==="bank");
       const ambiguous = [a,b].some(part=>part.length>1 && part.some(e=>!e.event));
       const expected=a.reduce((n,e)=>n+e.value-e.fee,0n), received=b.reduce((n,e)=>n+e.value,0n);
+      const bank=c.reduce((n,e)=>n+e.value,0n);
       const conflictingFees = a.some(e=>e.fee!==0n) && a.some(e=>e.type==="comissao");
       const mixed = a.some(e=>e.type==="liquido") && a.some(e=>e.type!=="liquido");
       const reason=g.conflict?"ID de evento repetido no arquivo ou com conteúdos diferentes":ambiguous?"Vários lançamentos sem ID individual":mixed?"Líquido e componentes no mesmo grupo":conflictingFees?"Comissão explícita e calculada no mesmo grupo":!a.length?"Sem previsão correspondente":!b.length?"Sem repasse correspondente":"";
       const difference=reason ? null : received-expected;
+      const bankAmbiguous=c.length>1&&c.some(e=>!e.event);
+      const declaredAmbiguous=b.length>1&&b.some(e=>!e.event);
+      const bankReason=!hasBankSource?"":g.conflict?"Identificador de evento em conflito":
+        bankAmbiguous?"Múltiplos depósitos sem identificadores individuais":
+        declaredAmbiguous?"Múltiplos repasses sem identificadores individuais":
+        !b.length?"Sem repasse declarado para comparar":
+        !c.length?"Sem depósito associado no CSV bancário":"";
+      const bankDifference=bankReason?null:bank-received;
+      const bankStatus=!hasBankSource?"Não analisado":bankReason?"Pendente":bankDifference===0n?"Conferido":"Divergente";
       return {...g,expected:a.length?expected:null,received:b.length?received:null,difference,reason,
+        bank:c.length?bank:null,bankDifference,bankReason,bankStatus,
         status:reason?"Pendente":difference===0n?"Conferido":"Divergente"};
     }).sort((a,b)=>a.key.localeCompare(b.key,"pt-BR"));
   }
@@ -166,12 +181,24 @@ const Book = (() => {
     }
     return {expected,received,short,extra,unpaired};
   }
+  function bankTotals(groups) {
+    let declared=0n,bank=0n,short=0n,extra=0n,unpaired=0,compared=0;
+    for(const group of groups){
+      if(group.bankDifference===null||group.bankDifference===undefined){unpaired++;continue;}
+      compared++;
+      declared+=group.received;
+      bank+=group.bank;
+      if(group.bankDifference<0n)short-=group.bankDifference;
+      else extra+=group.bankDifference;
+    }
+    return {declared,bank,short,extra,unpaired,compared};
+  }
   function cell(v) {
     let s=String(v ?? "");
     const formula = /^[\t\r\n\0]|^\s*[=+@\uFF1D\uFF0B\uFF0D\uFF20-]/u.test(s);
     if (formula && !/^-?\d+(,\d+)?$/.test(s)) s="'"+s;
     return '"'+s.replaceAll('"','""')+'"';
   }
-  return {csv,suggest,fields,parseSource,reconcile,totals,cents,decimal,money,cell,validDate};
+  return {csv,suggest,fields,parseSource,reconcile,totals,bankTotals,cents,decimal,money,cell,validDate};
 })();
 if (typeof module !== "undefined") module.exports = Book;

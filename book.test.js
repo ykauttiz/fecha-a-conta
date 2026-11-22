@@ -75,3 +75,54 @@ test("sugestões conservadoras reconhecem cabeçalhos genéricos sem presumir la
   a.equal(ambiguous.valor,2);
   a.equal(B.suggest(["pedido","pedido_id","valor"],"expected").pedido,0);
 });
+
+
+test("conciliação em três níveis preserva diferença do marketplace e revela diferença bancária independente",()=>{
+  const a1=src("expected","lote;evento;valor\nL01;v1;50");
+  const b1=src("received","lote;evento;valor\nL01;r1;20\nL01;r2;30");
+  const c1=src("bank","lote;evento;valor\nL01;b1;20\nL01;b2;29,50");
+  const [g]=B.reconcile([a1,b1,c1]);
+  a.equal(g.expected,5000n);
+  a.equal(g.received,5000n);
+  a.equal(g.difference,0n);
+  a.equal(g.status,"Conferido");
+  a.equal(g.bank,4950n);
+  a.equal(g.bankDifference,-50n);
+  a.equal(g.bankStatus,"Divergente");
+  a.deepEqual(B.bankTotals([g]),{declared:5000n,bank:4950n,short:50n,extra:0n,unpaired:0,compared:1});
+});
+
+test("sem extrato bancário, não se deve afirmar que um depósito foi confirmado",()=>{
+  const [g]=pair("pedido;valor\n001;10","pedido;valor\n001;10");
+  a.equal(g.bank,null);
+  a.equal(g.bankDifference,null);
+  a.equal(g.bankStatus,"Não analisado");
+});
+
+test("depósitos sem vínculo e múltiplas linhas bancárias sem evento permanecem inconclusivos",()=>{
+  const [withoutBank]=B.reconcile([
+    src("expected","pedido;valor\na;10"),
+    src("received","pedido;valor\na;10"),
+    src("bank","pedido;valor\noutra;10")
+  ]).filter(g=>g.id==="a");
+  a.equal(withoutBank.bankStatus,"Pendente");
+  a.equal(withoutBank.bankDifference,null);
+  const [ambiguous]=B.reconcile([
+    src("expected","pedido;valor\na;10"),
+    src("received","pedido;valor\na;10"),
+    src("bank","pedido;valor\na;6\na;4")
+  ]);
+  a.equal(ambiguous.status,"Conferido");
+  a.equal(ambiguous.bankStatus,"Pendente");
+  a.match(ambiguous.bankReason,/identificadores/);
+  a.equal(B.bankTotals([ambiguous]).compared,0);
+});
+
+test("tipos de depósito não se misturam às taxas nem ao repasse declarado",()=>{
+  const bank=src("bank","lote;depositado\nB;11,20");
+  a.equal(B.parseSource(bank)[0].type,"deposito");
+  a.equal(B.parseSource(bank)[0].value,1120n);
+  a.throws(()=>B.parseSource(src("bank","pedido;tipo;valor\na;repasse;2")),/tipo incompatível/);
+  a.throws(()=>B.parseSource(src("received","pedido;tipo;valor\na;deposito;2")),/tipo incompatível/);
+  a.throws(()=>B.parseSource(src("other","pedido;valor\na;2")),/Origem financeira desconhecida/);
+});
