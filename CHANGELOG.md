@@ -1,5 +1,16 @@
 # Changelog
 
+## 22 de novembro de 2026 · Interface premium e insights da conciliação
+
+- Tabelas com cabeçalhos íntegros e rolagem horizontal orientada em telas estreitas.
+- Cabeçalho mobile compacto e navegação horizontal; CI agora captura a página inteira para revisão visual.
+
+- Nova identidade visual para dashboard, cabeçalho, importação, tabelas, botões e temas, com animações e layouts responsivos.
+- Painel de insights de sessão: distribuição de situações, contagem por data de evento e encargos tipificados, atualizados a cada filtro.
+- Analytics somente-leitura, sem mudança de cálculos ou dos dados persistidos, com testes de unidade e estados vazios.
+- Integração da correção de contraste do PR #2, preservando auditorias no tema claro e escuro.
+
+
 ## 22 de novembro de 2026 · Contraste no tema escuro
 
 - Mensagem de status, selo "Conferido", recibo do exemplo e link "Ir para o fechamento" voltaram a ter contraste legível no tema escuro. O teste de navegador agora mede o contraste do texto visível nos dois temas e falha abaixo de 4,5:1 (3:1 para texto grande).

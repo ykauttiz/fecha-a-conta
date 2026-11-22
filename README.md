@@ -12,6 +12,16 @@ As exportações destinadas a planilhas tratam prefixos de fórmula ASCII, carac
 
 ![Conferência dos pedidos e repasses da loja fictícia.](assets/demonstracao.webp)
 
+## Painel de análise e interface
+
+As pendências agora aparecem agrupadas por motivo, com atalho para filtrar apenas os registros que precisam de investigação. Nenhuma revisão é aplicada automaticamente.
+
+O painel também permite baixar um CSV dos indicadores e das contagens, sem exportar dados bancários nem reinterpretar os cálculos. O arquivo registra encargos em **centavos**, com indicação explícita de que não são cobranças indevidas.
+
+O painel apresenta gráficos de situação, distribuição dos grupos e contagem de lançamentos por data de evento, todos calculados a partir da **seleção filtrada**. A seção de encargos exibe valores explicitamente tipificados nos registros de previsão, sem afirmar que constituem cobranças indevidas. Datas não significam previsão de depósitos. Sem dados, os componentes exibem estados vazios em vez de números fictícios.
+
+O design recebeu uma camada visual tecnológica, com superfícies premium, novas hierarquias, efeitos suaves de entrada, microinterações, temas refinados e layout específico para telas menores. Animações respeitam movimento reduzido.
+
 ## Aparência e navegação
 
 No cabeçalho, escolha **Sistema**, **Claro** ou **Escuro**. Sistema acompanha o aparelho. O navegador guarda a escolha localmente para a próxima visita. Use Tab para chegar ao atalho de conteúdo e aos controles. As transições respeitam a preferência de movimento reduzido.
@@ -50,7 +60,7 @@ Os modelos simples [pedidos.csv](pedidos.csv) e [repasses.csv](repasses.csv) con
 
 ## iFood e 99Food
 
-O iFood descreve um relatório mensal atualizado por eventos. A 99Food documenta pagamentos divididos. Ambos os casos motivam o uso de lotes, datas de eventos e importação incremental. A importação disponível é por mapeamento de CSV. A escolha da plataforma identifica a origem. Para homologar um layout específico, ainda são necessárias amostras autorizadas e anonimizadas com totais conhecidos. Não há conexão com contas ou API das plataformas.
+O iFood descreve um relatório mensal atualizado por eventos. A 99Food documenta pagamentos divididos. Ambos os casos motivam o uso de lotes, datas de eventos e importação incremental. A importação disponível é por mapeamento de CSV. A escolha da plataforma identifica a origem. Para homologar um layout específico, ainda são necessárias amostras autorizadas e anonimizadas com totais conhecidos. Não há conexão com contas ou API das plataformas. Os valores do lado **recebido** são informados nos arquivos importados; o sistema não verifica depósitos bancários automaticamente.
 
 [Relatório de conciliação do iFood](https://blog-parceiros.ifood.com.br/relatorio-de-conciliacao/) · [Pagamento dividido da 99Food](https://99app.com/99food/restaurantes/guias/como-acompanhar-seus-repasses-e-entender-o-novo-pagamento-dividido/)
 
@@ -60,7 +70,7 @@ Abra index.html para uso offline ou rode `python -m http.server 8000` para servi
 
 - `book.js` lê CSV, valida lançamentos, agrupa por origem e calcula as diferenças. `worker.js` executa esse motor fora da interface.
 - `app.js` gerencia importações, seleção, histórico e exportação. `core.js` mantém a API JavaScript anterior para consumidores do comparador simples.
-- `node --test` executa os testes do motor, incluindo 10 mil pedidos. A integração contínua testa o navegador em 375 e 1280 px, além do fluxo de backup e restauração.
+- `node --test` executa os testes do motor e da análise, incluindo 10 mil pedidos. A integração contínua testa o navegador em 375 e 1280 px, além do fluxo de backup e restauração.
 
 Filtre por tipo de lançamento, sentido da diferença e valor mínimo em reais. O filtro por tipo seleciona o grupo completo: ao procurar comissão, você continua vendo os depósitos e o previsto daquele lote. Os limites em centavos são inclusivos e valem também para os totais, a impressão e o CSV.
 
@@ -68,6 +78,8 @@ Ordene pedidos e lotes por maior diferença absoluta ou maior repasse recebido. 
 
 Em **Comparar repasses**, alterne entre plataforma e loja. O quadro acompanha os filtros e soma apenas os grupos comparáveis. Pedidos e lotes sem comparação aparecem na última coluna. Um travessão indica que nenhum valor pôde ser comparado.
 O resumo por loja ou plataforma exibe até 25 linhas por página. **Baixar comparação CSV** inclui todas as linhas do resumo filtrado.
+
+Na prévia, o sistema sugere também alguns cabeçalhos genéricos equivalentes (como “Número do pedido”, “Valor líquido” e “Data do evento”), sem presumir formatos oficiais de plataformas. Duas alternativas ambíguas exigem escolha manual. Confirme sempre o mapeamento antes da importação.
 
 Na prévia de um CSV, guarde o mapeamento das colunas e reaplique-o quando plataforma, cabeçalho e tipo de arquivo coincidirem. O modelo guarda a correspondência dos campos.
 

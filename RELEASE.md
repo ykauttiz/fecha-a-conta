@@ -1,17 +1,34 @@
-# Fecha a Conta · Aparência configurável
+# Fecha a Conta · Dashboard premium e insights financeiros
 
 ## O que mudou
 
-O cabeçalho reúne o acesso ao código e as três opções de tema. A escolha acompanha a navegação entre os projetos publicados no mesmo domínio.
+- Interface totalmente refinada com identidade tecnológica, cartões, tabelas, formulários, navegação e temas claro/escuro.
+- Animações de entrada e microinterações com respeito a movimento reduzido.
+- Novo painel de análise dos **grupos filtrados**, com distribuição de situação, eventos por data, encargos tipificados e motivos das pendências.
+- Exportação do resumo analítico em CSV, preservando a distinção entre contagem de eventos e dados monetários.
+- Sugestão conservadora de cabeçalhos genéricos na importação, com confirmação manual nos casos ambíguos.
+- Ajustes de responsividade, cabeçalho compacto e orientação de rolagem horizontal para tabelas em telas pequenas.
+- Correções de contraste do tema escuro e ampliação de testes de navegador e unidade.
 
 ## Experimente
 
-No lote fictício L01, confira os depósitos de **R$ 60,00** e **R$ 39,80**. Abra o pedido 0019 para ver a diferença de **R$ 1,50**. A escolha de iFood ou 99Food identifica a origem do CSV importado. Troque o tema no cabeçalho e recarregue a página para conferir sua preferência.
+1. Abra [a demonstração](https://ykauttiz.github.io/fecha-a-conta/).
+2. Selecione **Abrir exemplo fictício** e acompanhe os indicadores e gráficos de situação.
+3. Verifique a diferença de **R$ 1,50** no pedido **0019**.
+4. Explore **Por que há pendências?** e utilize **Examinar pendências**.
+5. Utilize **Baixar análise CSV** para exportar os indicadores da seleção.
+6. Teste os temas, filtros, importação e restauração de um backup.
 
-[Abrir a ferramenta](https://ykauttiz.github.io/fecha-a-conta/) · [Portfólio](https://ykauttiz.github.io/contratempo/portfolio/)
+## Limitações transparentes
 
-## Entrega anterior
+- Os gráficos e os indicadores da demo usam apenas dados fictícios.
+- A importação ainda utiliza arquivos CSV fornecidos pelo usuário; não existe conexão automática com contas de iFood ou 99Food.
+- Valores informados no CSV de recebimentos **não equivalem a depósitos bancários verificados automaticamente**.
+- Compatibilidade com layouts oficiais específicos depende de exemplos autorizados e testes próprios.
+- Nenhum cálculo de conciliação é alterado pelos componentes de análise visual.
 
-Quando a seleção só contém lançamentos pendentes, o painel e a impressão exibem um travessão nas quantias comparáveis. A impressão identifica a loja e a plataforma de cada grupo.
+## Validação da entrega
 
-A suíte de navegador passou a exercitar os fluxos de uso em 320, 375 e 1280 pixels.
+O workflow `Conferência financeira` executa a suíte Node e os testes de interface com Chromium e Firefox. As capturas de telas completas podem ser consultadas nos artefatos da execução.
+
+[Repositório](https://github.com/ykauttiz/fecha-a-conta) · [Demonstração](https://ykauttiz.github.io/fecha-a-conta/) · [Changelog](CHANGELOG.md)

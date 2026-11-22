@@ -79,6 +79,12 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
         page.locator("#demo").click()
         expect(page.locator("#metrics")).to_contain_text("R$ 1,50")
+        expect(page.locator("#insights-cards")).to_contain_text("Grupos na seleção")
+        expect(page.locator("#insights-status")).to_have_attribute("role", "img")
+        with page.expect_download() as insights_file:
+            page.locator("#insights-export").click()
+        assert "Situação" in Path(insights_file.value.path()).read_text(encoding="utf-8-sig")
+
         for mode in ("dark", "light"):
             theme.select_option(mode)
             page.evaluate("document.querySelectorAll('details').forEach(d => d.open = true)")
@@ -90,9 +96,11 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
         if os.environ.get("CAPTURAR_DEMO") == "1":
             captures = root / "capturas"
             captures.mkdir(exist_ok=True)
-            page.screenshot(path=captures / f"demo-{width}.png", animations="disabled")
+            page.evaluate("scrollTo(0, 0)")
+            page.screenshot(path=captures / f"demo-{width}.png", animations="disabled", full_page=True)
 
         expect(page.locator("#segments")).to_contain_text("Delivery")
+        assert page.evaluate("getComputedStyle(document.querySelector('.segment th')).whiteSpace") == 'nowrap'
         page.locator("#segment-by").select_option("shop")
         expect(page.locator("#segments")).to_contain_text("Loja exemplo")
         with page.expect_download() as summary_file:
