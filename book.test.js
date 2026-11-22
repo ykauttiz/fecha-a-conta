@@ -126,3 +126,49 @@ test("tipos de depósito não se misturam às taxas nem ao repasse declarado",()
   a.throws(()=>B.parseSource(src("received","pedido;tipo;valor\na;deposito;2")),/tipo incompatível/);
   a.throws(()=>B.parseSource(src("other","pedido;valor\na;2")),/Origem financeira desconhecida/);
 });
+
+
+test("conflito somente bancário não invalida a comparação da plataforma",()=>{
+  const [g]=B.reconcile([
+    src("expected","pedido;evento;valor\n001;a;10"),
+    src("received","pedido;evento;valor\n001;r;10"),
+    src("bank","pedido;evento;valor\n001;b;9\n001;b;9")
+  ]);
+  a.equal(g.status,"Conferido");
+  a.equal(g.difference,0n);
+  a.equal(g.bankStatus,"Pendente");
+  a.equal(g.bankDifference,null);
+  a.equal(g.conflicts.bank,true);
+  a.equal(g.conflicts.received,false);
+});
+test("conflito da previsão não apaga a conferência independente entre plataforma e banco",()=>{
+  const [g]=B.reconcile([
+    src("expected","pedido;evento;valor\n001;a;10\n001;a;10"),
+    src("received","pedido;evento;valor\n001;r;10"),
+    src("bank","pedido;evento;valor\n001;b;9,50")
+  ]);
+  a.equal(g.status,"Pendente");
+  a.equal(g.difference,null);
+  a.equal(g.bankStatus,"Divergente");
+  a.equal(g.bankDifference,-50n);
+});
+test("conflito do repasse declarado bloqueia as duas comparações",()=>{
+  const [g]=B.reconcile([
+    src("expected","pedido;evento;valor\n001;a;10"),
+    src("received","pedido;evento;valor\n001;r;10\n001;r;10"),
+    src("bank","pedido;evento;valor\n001;b;10")
+  ]);
+  a.equal(g.status,"Pendente");a.equal(g.difference,null);
+  a.equal(g.bankStatus,"Pendente");a.equal(g.bankDifference,null);
+});
+test("cabeçalhos normalizados duplicados obrigam o mapeamento manual",()=>{
+  const map=B.suggest(["Pedido","pedido","Valor"],"expected");
+  a.equal(map.pedido,-1);a.equal(map.valor,2);
+  a.throws(()=>B.parseSource(src("expected","Pedido;pedido;Valor\n1;2;3")),/Mapeie valor e pedido ou lote/);
+});
+test("exportação CSV protege prefixos invisíveis e valores Unicode sem corromper números",()=>{
+  for(const input of ["\u200b=1+1","\ufeff+1","\u2060@SUM(A1)","-cmd","\r=1+1","\u2212SUM(A1)"])
+    a.ok(B.cell(input).startsWith('"\''),input);
+  a.equal(B.cell("-10,25"),'"-10,25"');
+  a.equal(B.cell("-10.25"),'"-10.25"');
+});

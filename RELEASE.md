@@ -1,25 +1,25 @@
-# Fecha a Conta · Experiência premium e navegação inteligente
+# Fecha a Conta · Auditoria de integridade e segurança
 
-## Melhorias
+## Correções verificadas
 
-- Nova central de comandos com busca de ações, pedidos e lotes; atalhos Ctrl/⌘+K e /.
-- Filtros rápidos e prioridade contextual de investigação, baseada na maior diferença absoluta dos dados selecionados.
-- Fluxo de três etapas durante importação, validação e investigação.
-- Navegação refinada por seções, estilo premium, microinterações e motion design consistente.
-- Transições e animações respeitam a preferência de movimento reduzido; navegação por teclado e layout móvel testados.
-- Sem alteração no motor de conciliação, valores monetários, backup ou transmissão de dados.
+- Conflitos de ID de evento isolados por origem financeira: previsão, repasse declarado e depósito bancário.
+- Conflitos no repasse declarado bloqueiam os dois níveis de comparação, em vez de permitir resultados indevidamente conclusivos.
+- Valores de comparação e estados bancários expostos separadamente na tabela e no painel de investigação.
+- Filtro de situação bancária e comando contextual para investigar depósitos com diferença.
+- Mapeamento de colunas canônicas normalizadas duplicadas agora exige seleção manual.
+- CSV exportado recebe proteção reforçada contra fórmulas com prefixos invisíveis e Unicode.
+- Backups com revisões malformadas ou excessivamente longas são rejeitados sem sobrescrever a sessão.
+- Changelog corrigido, testes de regressão e navegação ampliados.
 
-## Como verificar
+## Testar na demonstração
 
-1. Abra a [demonstração](https://ykauttiz.github.io/fecha-a-conta/).
-2. Pressione **Ctrl+K** ou use **Buscar ações e pedidos**.
-3. Abra o exemplo fictício e busque **0019** na central.
-4. Experimente os filtros rápidos **Divergentes** e **Pendentes**.
-5. Confira a indicação da próxima ação e as etapas do fechamento.
-6. Teste os temas e o layout no celular.
+1. Abra [o Fecha a Conta](https://ykauttiz.github.io/fecha-a-conta/).
+2. Carregue o exemplo fictício, observe a separação entre o estado da plataforma e o estado bancário.
+3. Filtre por situação bancária e abra a central de comandos para investigar diferenças.
+4. Confira registros, valores e suas origens antes de concluir um fechamento.
 
-## Segurança e limites
+## Restrições
 
-Todos os dados financeiros continuam processados no navegador. A central consulta apenas a sessão carregada no próprio dispositivo. Nenhuma integração bancária automática foi adicionada.
+O site não acessa contas bancárias nem marketplaces automaticamente. A correspondência depende de identificadores presentes nos CSVs importados. Testes automatizados não substituem auditoria independente com extratos reais autorizados.
 
-[Changelog](CHANGELOG.md) · [Código](https://github.com/ykauttiz/fecha-a-conta)
+[Histórico de mudanças](CHANGELOG.md) · [Repositório](https://github.com/ykauttiz/fecha-a-conta)

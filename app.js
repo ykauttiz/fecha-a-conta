@@ -54,6 +54,7 @@ function options(select,values,all) {
 }
 function commit(list,result,history,isDemo) {
   sources=list;groups=result;notes=history;demo=isDemo;selected=null;page=1;
+  if(!sources.some(s=>s.side==="bank"))$("bank-status").value="";
   draft=[];$("preview").hidden=true;$("workspace").hidden=!sources.length;
   setWorkflow(sources.length?2:0);
   $("origin").textContent=isDemo?"Dados fictícios":sources.length+" arquivo(s) nesta sessão";
@@ -79,7 +80,7 @@ function signature(g) {
 function reviewed(g) {return notes.some(n=>n.key===g.key && n.signature===signature(g));}
 function filter() {
   const q=$("query").value.trim().toLowerCase(),status=$("status").value;
-  const direction=$("direction").value, type=$("entry-type").value;
+  const direction=$("direction").value, type=$("entry-type").value, bankStatus=$("bank-status").value;
   let minimum=0n;
   const raw=$("minimum").value.trim();
   if(raw){
@@ -89,6 +90,7 @@ function filter() {
   const shop=$("shop").value, channel=$("channel").value, start=$("from").value, end=$("to").value;
   const matches = groups.filter(g=>{
     if(type && !g.entries.some(e=>e.type===type))return false;
+    if(bankStatus && g.bankStatus!==bankStatus)return false;
     if(direction==="short" && !(g.difference!==null && g.difference<0n))return false;
     if(direction==="extra" && !(g.difference!==null && g.difference>0n))return false;
     if(minimum>0n && (g.difference===null || (g.difference<0n?-g.difference:g.difference)<minimum))return false;
@@ -160,6 +162,7 @@ $("segment-by").onchange = () => renderSegments(filter());
 function renderBank(list){
   const panel=$("bank-panel"), hasBank=sources.some(s=>s.side==="bank");
   panel.hidden=!hasBank;
+  $("bank-filter-label").hidden=!hasBank;
   if(!hasBank)return;
   const totals=Book.bankTotals(list);
   const moneyOrDash=n=>totals.compared?Book.money(n):"—";
@@ -199,7 +202,7 @@ function render() {
   const list=filter(),t=Book.totals(list);
   renderSegments(list);
   if(window.FechaInsights)window.FechaInsights.render(list);
-  $("metrics").replaceChildren(...[["Líquido previsto",t.expected],["Repasse declarado",t.received],["Recebido a menos",t.short],["Recebido a mais",t.extra]].map(([label,n])=>{
+  $("metrics").replaceChildren(...[["Líquido previsto",t.expected],["Repasse declarado",t.received],["Repasse a menos",t.short],["Repasse a mais",t.extra]].map(([label,n])=>{
     const box=element("div",label);box.className="metric";box.append(element("strong",comparableAmount(n,list.length,t)));return box;
   }));
   $("count").textContent=list.length+" grupo(s) na seleção · "+t.unpaired+" sem comparação conclusiva. Datas selecionam o grupo completo.";
@@ -214,7 +217,15 @@ function render() {
     btn.onclick=()=>{selected=g.key;detail(g);$("detail").scrollIntoView({block:"start"});$("detail").querySelector("h2").focus();};
     row.insertCell().append(btn);
     const badge=element("span",g.status+(reviewed(g)?" · revisado":""));badge.className="badge "+(g.status==="Conferido"?"":"warn");
-    row.insertCell().append(badge);cells(row,[g.expected,g.received,g.difference].map(Book.money));return row;
+    const stateCell=row.insertCell();stateCell.append(badge);
+    if(sources.some(s=>s.side==="bank")){
+      const bankBadge=element("small","Banco: "+g.bankStatus);
+      bankBadge.className="bank-status-inline";
+      bankBadge.dataset.state=g.bankStatus==="Divergente"?"alert":g.bankStatus==="Pendente"?"pending":"clear";
+      bankBadge.title=g.bankReason||"Comparação de repasse declarado e depósito informado";
+      stateCell.append(bankBadge);
+    }
+    cells(row,[g.expected,g.received,g.difference].map(Book.money));return row;
   }));
   const current=list.find(g=>g.key===selected);$("detail").hidden=!current;if(current)detail(current);
   window.dispatchEvent(new Event("fecha:render"));
@@ -300,7 +311,7 @@ $("cancel").onclick=()=>{stop();setWorkflow(sources.length?2:0);say("Prévia can
 $("demo").onclick=()=>{if(sources.length&&!demo&&!confirm("Substituir o fechamento atual pelo exemplo fictício?"))return;
   stop();commit(demoSources,Book.reconcile(demoSources),[],true);say("Exemplo fictício carregado.");$("workspace").scrollIntoView();};
 $("clear").onclick=()=>{if(!confirm("Limpar os dados desta página? Baixe um backup se quiser retomá-los."))return;stop();commit([],[],[],false);$("import").reset();say("Fechamento limpo.");};
-const filterFields = ["query","status","shop","channel","from","to","minimum","direction","entry-type","order-results"];
+const filterFields = ["query","status","bank-status","shop","channel","from","to","minimum","direction","entry-type","order-results"];
 $("reset-filters").onclick = () => {
   for (const id of filterFields) $(id).value = "";
   page = 1;
@@ -321,7 +332,10 @@ $("restore").onchange=async e=>{
         !["name","store","platform","rate"].every(k=>typeof s[k]==="string")||s.map && !Book.fields.every(f=>Number.isInteger(s.map[f])))throw Error("Origem inválida no backup.");
       const hash=await digest(s.text);if(s.hash && s.hash!==hash)throw Error("O conteúdo de um arquivo foi alterado.");s.hash=hash;
     }
-    if(!data.notes.every(n=>n&&["at","text","signature","key"].every(k=>typeof n[k]==="string")))throw Error("Histórico de revisão inválido.");
+    if(!data.notes.every(n=>n&&["at","text","signature","key"].every(k=>typeof n[k]==="string") &&
+      n.text.trim().length>0 && n.text.length<=500 && n.at.length<=64 &&
+      n.key.length<=16384 && n.signature.length<=16*1048576))
+      throw Error("Histórico de revisão inválido.");
     if(id!==version)return;
     if(sources.length && !confirm("Substituir a sessão atual pelo backup?"))return;
     calculate(data.sources,id,result=>{commit(data.sources,result,data.notes,data.demo===true);say("Backup restaurado.");});

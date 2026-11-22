@@ -320,3 +320,20 @@ kbd{
 }
 
 .project-nav a[hidden]{display:none!important}
+
+/* Remover do fluxo visual o filtro bancário sem extrato correspondente. */
+.filters #bank-filter-label[hidden]{display:none!important}
+
+/* O selo da plataforma não é confirmação do depósito bancário. */
+.bank-status-inline{
+  display:block;width:max-content;max-width:100%;
+  margin-top:.35rem;padding:.24rem .48rem;
+  font-size:.72rem;font-weight:760;line-height:1.3;
+  border:1px solid var(--app-border);border-radius:8px;
+  background:var(--app-soft);color:var(--app-ink);
+  white-space:normal;
+}
+.bank-status-inline[data-state="alert"]{
+  background:var(--app-soft);border-color:var(--app-border);color:var(--app-ink);
+}
+.bank-status-inline[data-state="pending"]{border-style:dashed}

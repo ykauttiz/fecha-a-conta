@@ -74,8 +74,15 @@ const Book = (() => {
     };
     const chosen=new Set();
     return Object.fromEntries(fields.map(field=>{
-      let index=names.indexOf(field);
-      if(index<0&&field==="valor")index=names.indexOf(side==="expected"?"previsto":side==="bank"?"depositado":"recebido");
+      const canonical=names.flatMap((name,i)=>name===field?[i]:[]);
+      let index=canonical.length===1?canonical[0]:-1;
+      if(canonical.length>1)return [field,-1];
+      if(index<0&&field==="valor"){
+        const alias=side==="expected"?"previsto":side==="bank"?"depositado":"recebido";
+        const possible=names.flatMap((name,i)=>name===alias?[i]:[]);
+        index=possible.length===1?possible[0]:-1;
+        if(possible.length>1)return [field,-1];
+      }
       if(index<0){
         const candidates=names.flatMap((name,i)=>(aliases[field]||[]).includes(name)?[i]:[]);
         index=candidates.length===1?candidates[0]:-1;
@@ -123,6 +130,10 @@ const Book = (() => {
   }
   function reconcile(sources) {
     const groups = new Map(), seenFiles=new Set(), byEvent=new Map();
+    function markConflict(group,side){
+      group.conflict=true; // flag agregado mantido para compatibilidade externa
+      group.conflicts[side]=true;
+    }
     const hasBankSource=sources.some(source=>source.side==="bank");
     for (const source of sources) {
       const identity=JSON.stringify([source.side,source.store,source.platform,source.hash]);
@@ -133,17 +144,17 @@ const Book = (() => {
         const key=JSON.stringify([...e.scope,e.batch?"lote":"pedido",e.batch||e.order]);
         let group=groups.get(key);
         if (!group) {
-          group={key,id:e.batch||e.order,kind:e.batch?"Lote":"Pedido",scope:e.scope,entries:[],conflict:false};
+          group={key,id:e.batch||e.order,kind:e.batch?"Lote":"Pedido",scope:e.scope,entries:[],conflict:false,conflicts:{expected:false,received:false,bank:false}};
           groups.set(key,group);
         }
         if (e.event) {
           const id=JSON.stringify([...e.scope,e.side,e.event]);
           const signature=JSON.stringify([key,e.order,e.date,e.type,String(e.value),String(e.fee)]);
           const first=byEvent.get(id);
-          if (fileEvents.has(id)) group.conflict=true;
+          if (fileEvents.has(id)) markConflict(group,e.side);
           fileEvents.add(id);
           if (first && first.signature===signature && !group.conflict) continue;
-          if (first) { first.group.conflict=true; group.conflict=true; }
+          if (first) { markConflict(first.group,e.side); markConflict(group,e.side); }
           else byEvent.set(id,{group,signature});
         }
         group.entries.push(e);
@@ -156,11 +167,13 @@ const Book = (() => {
       const bank=c.reduce((n,e)=>n+e.value,0n);
       const conflictingFees = a.some(e=>e.fee!==0n) && a.some(e=>e.type==="comissao");
       const mixed = a.some(e=>e.type==="liquido") && a.some(e=>e.type!=="liquido");
-      const reason=g.conflict?"ID de evento repetido no arquivo ou com conteúdos diferentes":ambiguous?"Vários lançamentos sem ID individual":mixed?"Líquido e componentes no mesmo grupo":conflictingFees?"Comissão explícita e calculada no mesmo grupo":!a.length?"Sem previsão correspondente":!b.length?"Sem repasse correspondente":"";
+      const platformConflict=g.conflicts.expected||g.conflicts.received;
+      const bankConflict=g.conflicts.received||g.conflicts.bank;
+      const reason=platformConflict?"ID de evento repetido no arquivo ou com conteúdos diferentes":ambiguous?"Vários lançamentos sem ID individual":mixed?"Líquido e componentes no mesmo grupo":conflictingFees?"Comissão explícita e calculada no mesmo grupo":!a.length?"Sem previsão correspondente":!b.length?"Sem repasse correspondente":"";
       const difference=reason ? null : received-expected;
       const bankAmbiguous=c.length>1&&c.some(e=>!e.event);
       const declaredAmbiguous=b.length>1&&b.some(e=>!e.event);
-      const bankReason=!hasBankSource?"":g.conflict?"Identificador de evento em conflito":
+      const bankReason=!hasBankSource?"":bankConflict?"Identificador de evento em conflito":
         bankAmbiguous?"Múltiplos depósitos sem identificadores individuais":
         declaredAmbiguous?"Múltiplos repasses sem identificadores individuais":
         !b.length?"Sem repasse declarado para comparar":
@@ -195,8 +208,10 @@ const Book = (() => {
   }
   function cell(v) {
     let s=String(v ?? "");
-    const formula = /^[\t\r\n\0]|^\s*[=+@\uFF1D\uFF0B\uFF0D\uFF20-]/u.test(s);
-    if (formula && !/^-?\d+(,\d+)?$/.test(s)) s="'"+s;
+    // Protege também caracteres de controle e prefixos invisíveis Unicode.
+    const formula = /^[\x00-\x20\x7f\u00a0\u2000-\u200f\u2028\u2029\u2060\ufeff]*[=+@\-\uff1d\uff0b\uff0d\uff20\u2212]/u.test(s) ||
+      /^[\t\r\n\0]/u.test(s);
+    if (formula && !/^-?\d+(?:[,.]\d+)?$/.test(s)) s="'"+s;
     return '"'+s.replaceAll('"','""')+'"';
   }
   return {csv,suggest,fields,parseSource,reconcile,totals,bankTotals,cents,decimal,money,cell,validDate};
