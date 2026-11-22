@@ -100,6 +100,7 @@ with sync_playwright() as p, TemporaryDirectory() as tmp:
             page.screenshot(path=captures / f"demo-{width}.png", animations="disabled", full_page=True)
 
         expect(page.locator("#segments")).to_contain_text("Delivery")
+        assert page.evaluate("getComputedStyle(document.querySelector('.segment th')).whiteSpace") == 'nowrap'
         page.locator("#segment-by").select_option("shop")
         expect(page.locator("#segments")).to_contain_text("Loja exemplo")
         with page.expect_download() as summary_file:

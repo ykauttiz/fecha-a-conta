@@ -538,3 +538,20 @@ footer{margin-top:2.7rem;padding:1.8rem 0;color:var(--app-muted)}
     padding:.35rem .7rem;
   }
 }
+
+/* Tabelas extensas: preservar palavras e fornecer rolagem horizontal real. */
+.segment .scroll{overflow-x:auto;overscroll-behavior-x:contain;max-width:100%}
+.segment table{min-width:830px;table-layout:auto}
+.segment :is(th,td){
+  overflow-wrap:normal;
+  word-break:normal;
+  white-space:nowrap;
+  padding:.8rem 1rem;
+}
+.segment th:first-child{min-width:142px}
+.segment th:nth-child(2){min-width:120px}
+.scroll-hint{display:none;font-size:.79rem;color:var(--app-muted);font-weight:680;margin:.45rem 0}
+@media(max-width:670px){
+  .scroll-hint{display:block}
+  .segment .scroll{scrollbar-width:thin;scrollbar-color:var(--app-accent) var(--app-soft)}
+}

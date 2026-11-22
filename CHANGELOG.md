@@ -2,6 +2,7 @@
 
 ## 22 de novembro de 2026 · Interface premium e insights da conciliação
 
+- Tabelas com cabeçalhos íntegros e rolagem horizontal orientada em telas estreitas.
 - Cabeçalho mobile compacto e navegação horizontal; CI agora captura a página inteira para revisão visual.
 
 - Nova identidade visual para dashboard, cabeçalho, importação, tabelas, botões e temas, com animações e layouts responsivos.
