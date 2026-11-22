@@ -12,6 +12,12 @@ As exportações destinadas a planilhas tratam prefixos de fórmula ASCII, carac
 
 ![Conferência dos pedidos e repasses da loja fictícia.](assets/demonstracao.webp)
 
+## Painel de análise e interface
+
+O painel apresenta gráficos de situação, distribuição dos grupos e contagem de lançamentos por data de evento, todos calculados a partir da **seleção filtrada**. A seção de encargos exibe valores explicitamente tipificados nos registros de previsão, sem afirmar que constituem cobranças indevidas. Datas não significam previsão de depósitos. Sem dados, os componentes exibem estados vazios em vez de números fictícios.
+
+O design recebeu uma camada visual tecnológica, com superfícies premium, novas hierarquias, efeitos suaves de entrada, microinterações, temas refinados e layout específico para telas menores. Animações respeitam movimento reduzido.
+
 ## Aparência e navegação
 
 No cabeçalho, escolha **Sistema**, **Claro** ou **Escuro**. Sistema acompanha o aparelho. O navegador guarda a escolha localmente para a próxima visita. Use Tab para chegar ao atalho de conteúdo e aos controles. As transições respeitam a preferência de movimento reduzido.
@@ -60,7 +66,7 @@ Abra index.html para uso offline ou rode `python -m http.server 8000` para servi
 
 - `book.js` lê CSV, valida lançamentos, agrupa por origem e calcula as diferenças. `worker.js` executa esse motor fora da interface.
 - `app.js` gerencia importações, seleção, histórico e exportação. `core.js` mantém a API JavaScript anterior para consumidores do comparador simples.
-- `node --test` executa os testes do motor, incluindo 10 mil pedidos. A integração contínua testa o navegador em 375 e 1280 px, além do fluxo de backup e restauração.
+- `node --test` executa os testes do motor e da análise,, incluindo 10 mil pedidos. A integração contínua testa o navegador em 375 e 1280 px, além do fluxo de backup e restauração.
 
 Filtre por tipo de lançamento, sentido da diferença e valor mínimo em reais. O filtro por tipo seleciona o grupo completo: ao procurar comissão, você continua vendo os depósitos e o previsto daquele lote. Os limites em centavos são inclusivos e valem também para os totais, a impressão e o CSV.
 

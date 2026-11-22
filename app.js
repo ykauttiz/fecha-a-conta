@@ -149,6 +149,7 @@ $("segment-by").onchange = () => renderSegments(filter());
 function render() {
   const list=filter(),t=Book.totals(list);
   renderSegments(list);
+  if(window.FechaInsights)window.FechaInsights.render(list);
   $("metrics").replaceChildren(...[["Líquido previsto",t.expected],["Repasse recebido",t.received],["Recebido a menos",t.short],["Recebido a mais",t.extra]].map(([label,n])=>{
     const box=element("div",label);box.className="metric";box.append(element("strong",comparableAmount(n,list.length,t)));return box;
   }));
