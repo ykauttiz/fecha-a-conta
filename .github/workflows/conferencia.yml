@@ -9,7 +9,7 @@ jobs:
       matrix:
         node: ['22', '24']
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
@@ -20,7 +20,7 @@ jobs:
       matrix:
         engine: [chromium, firefox]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: '3.13'
@@ -31,7 +31,7 @@ jobs:
         env:
           ENGINE: ${{ matrix.engine }}
           CAPTURAR_DEMO: "1"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: capturas-${{ matrix.engine }}
           path: capturas/*.png
@@ -44,7 +44,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Publicar marco testado
